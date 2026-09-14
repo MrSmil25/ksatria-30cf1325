@@ -21,3 +21,10 @@
 .brand-symbol img{width:28px;height:28px;object-fit:contain}
 .logo-slot{display:grid;place-items:center}
 html:not(.dark) .brand-symbol{background:#f1f5f9}
+
+/* Perf: on touch / small screens the blurred aura is the costliest layer —
+   keep the glow, drop the continuous animation and heavy blur radius. */
+@media (pointer:coarse),(max-width:700px){
+  .aura::before,.aura::after{animation:none;filter:blur(16px)}
+  .card{backdrop-filter:none;background:linear-gradient(145deg,#16243bf5,#0c1629fa 63%)}
+}
