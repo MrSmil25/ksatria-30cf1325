@@ -134,13 +134,14 @@ async function init(){
 }
 logoCanvas.addEventListener('webglcontextlost',e=>{e.preventDefault();gpu=null;loaded=false;fallback.hidden=false;pageStatus.textContent='Mode ringan aktif. Klik untuk masuk.';if(transition)finishTransition();requestDraw()});
 function project(p,pose){let x=p.x,y=p.y,z=p.z;const cx=Math.cos(pose.rx),ax=Math.sin(pose.rx),cy=Math.cos(pose.ry),ay=Math.sin(pose.ry),cz=Math.cos(pose.rz),az=Math.sin(pose.rz);[y,z]=[cx*y-ax*z,ax*y+cx*z];[x,z]=[cy*x+ay*z,-ay*x+cy*z];return {x:pose.x+(cz*x-az*y)*pose.size,y:pose.y-(az*x+cz*y)*pose.size};}
-const dust=Array.from({length:64},()=>({x:random(),y:random(),s:random(),a:random()*6.28}));
+const dust=Array.from({length:LOWEND?26:44},()=>({x:random(),y:random(),s:random(),a:random()*6.28}));
 function drawAmbient(now){
- if(!ctx)return;ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,width,height);const opacity=opened?.28:1;
+ if(!ctx)return;ctx.setTransform(adpr,0,0,adpr,0,0);ctx.clearRect(0,0,width,height);const opacity=opened?.28:1;
  // A restrained, flowing particle horizon with cursor parallax.
- const cols=width<600?52:92,rows=14;
- for(let row=0;row<rows;row++){const depth=row/(rows-1);ctx.fillStyle=`rgba(109,150,222,${(.02+depth*.10)*opacity})`;ctx.beginPath();for(let col=0;col<cols;col++){const u=col/(cols-1),x=u*width*1.18-width*.09+sx*depth*19;const wave=Math.sin(u*9+clock*.18+depth*3)*15+Math.sin(u*16-clock*.14+depth*2)*5;const y=height*.80+depth*depth*height*.2+wave*(.3+depth*.7)+sy*depth*9;const radius=.45+depth*.55;ctx.moveTo(x+radius,y);ctx.arc(x,y,radius,0,Math.PI*2)}ctx.fill();}
- for(const p of dust){const x=p.x*width+Math.sin(clock*.1+p.a)*7+sx*p.s*12,y=p.y*height+Math.cos(clock*.08+p.a)*8;const a=(.04+p.s*.16)*opacity;ctx.fillStyle=`rgba(165,192,237,${a})`;ctx.beginPath();ctx.arc(x,y,.4+p.s*.6,0,Math.PI*2);ctx.fill();}
+ // Fewer, slightly larger dots keep the same look at a fraction of the draw cost.
+ const cols=LOWEND||width<600?34:60,rows=9;
+ for(let row=0;row<rows;row++){const depth=row/(rows-1);ctx.fillStyle=`rgba(109,150,222,${(.03+depth*.13)*opacity})`;ctx.beginPath();for(let col=0;col<cols;col++){const u=col/(cols-1),x=u*width*1.18-width*.09+sx*depth*19;const wave=Math.sin(u*9+clock*.18+depth*3)*15+Math.sin(u*16-clock*.14+depth*2)*5;const y=height*.80+depth*depth*height*.2+wave*(.3+depth*.7)+sy*depth*9;const radius=.55+depth*.65;ctx.moveTo(x+radius,y);ctx.arc(x,y,radius,0,Math.PI*2)}ctx.fill();}
+ ctx.fillStyle=`rgba(165,192,237,${.12*opacity})`;ctx.beginPath();for(const p of dust){const x=p.x*width+Math.sin(clock*.1+p.a)*7+sx*p.s*12,y=p.y*height+Math.cos(clock*.08+p.a)*8,r=.4+p.s*.7;ctx.moveTo(x+r,y);ctx.arc(x,y,r,0,Math.PI*2);}ctx.fill();
  if(transition){const t=clamp((now-transition.start)/CONFIG.transitionMs);ctx.strokeStyle=`rgba(160,193,255,${Math.sin(t*Math.PI)*.08})`;ctx.lineWidth=1;ctx.beginPath();ctx.ellipse(width/2,height*.50,Math.min(width*.46,340)*(t+.1),80*(t+.1),-.1,0,Math.PI*2);ctx.stroke();}
 }
 function drawParticles(model,from,to,t,entrance=false){
