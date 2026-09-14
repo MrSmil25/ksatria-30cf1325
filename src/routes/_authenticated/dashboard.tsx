@@ -381,6 +381,27 @@ function DashboardPage() {
           <p className="dashboard-hero-role">
             {[profile?.role, org?.org_name ?? "My Room"].filter(Boolean).join(" · ")}
           </p>
+          <blockquote className="dashboard-leadership-quote">
+            “Kolaborasi hari ini, dampak lebih besar untuk masa depan.”
+          </blockquote>
+          <div className="dashboard-daily-summary" aria-label="Ringkasan hari ini">
+            <p>Ringkasan hari ini</p>
+            <span className="dashboard-daily-item">
+              <ClipboardCheck />{" "}
+              {assignmentsLoading ? "Memuat tugas…" : `${pendingAssignments} tugas perlu dilihat`}
+            </span>
+            <span className="dashboard-daily-item">
+              <CalendarDays /> {todayEvents.length} agenda hari ini
+            </span>
+            <Link to="/notifications" className="dashboard-daily-item">
+              <Bell />{" "}
+              {unreadLoading
+                ? "Memuat notifikasi…"
+                : unreadError
+                  ? "Notifikasi belum termuat"
+                  : `${unreadNotifications} notifikasi baru`}
+            </Link>
+          </div>
           <div className="dashboard-hero-actions">
             <Link to="/workspace" className="dashboard-hero-primary">
               <BriefcaseBusiness className="size-5" />
@@ -406,49 +427,32 @@ function DashboardPage() {
         </div>
       </section>
 
-      <section className="dashboard-daily-summary dash-enter" aria-label="Ringkasan hari ini">
-        <p>Ringkasan hari ini</p>
-        <span className="dashboard-daily-item">
-          <ClipboardCheck />{" "}
-          {assignmentsLoading ? "Memuat tugas…" : `${pendingAssignments} tugas perlu dilihat`}
-        </span>
-        <span className="dashboard-daily-item">
-          <CalendarDays /> {todayEvents.length} agenda hari ini
-        </span>
-        <Link to="/notifications" className="dashboard-daily-item">
-          <Bell />{" "}
-          {unreadLoading
-            ? "Memuat notifikasi…"
-            : unreadError
-              ? "Notifikasi belum termuat"
-              : `${unreadNotifications} notifikasi baru`}
-        </Link>
-      </section>
-
       <QuickActionsGrid pendingLabel={pendingAssignmentLabel} />
 
-      <AttentionCenter items={attentionItems} />
+      <div className="dashboard-operations-grid dash-stagger">
+        <AttentionCenter items={attentionItems} />
 
-      <ActivityTimeline items={activityItems} />
+        <ActivityTimeline items={activityItems} />
 
-      <section
-        id="ringkasan-organisasi"
-        className="dashboard-section dash-enter"
-        aria-labelledby="summary-heading"
-      >
-        <div className="dashboard-section-heading">
-          <div>
-            <p className="dashboard-section-kicker">ORGANIZATION PULSE</p>
-            <h2 id="summary-heading">Organisasi Hari Ini</h2>
+        <section
+          id="ringkasan-organisasi"
+          className="dashboard-section dash-enter"
+          aria-labelledby="summary-heading"
+        >
+          <div className="dashboard-section-heading">
+            <div>
+              <p className="dashboard-section-kicker">ORGANISASI</p>
+              <h2 id="summary-heading">Organisasi Hari Ini</h2>
+            </div>
           </div>
-        </div>
-        <div className="dashboard-pulse-grid dash-stagger">
-          <StatCard label="Total Anggota" value={isLoading ? "…" : totalAnggota} icon={Users} />
-          <StatCard label="Anggota Aktif" value={isLoading ? "…" : anggotaAktif} icon={UserCheck} />
-          <StatCard label="Event Berjalan" value={activeEvents.length} icon={CalendarDays} />
-          <StatCard label="Deal Aktif" value={activeDeals} icon={Handshake} />
-        </div>
-      </section>
+          <div className="dashboard-pulse-grid dash-stagger">
+            <StatCard label="Total Anggota" value={isLoading ? "…" : totalAnggota} icon={Users} />
+            <StatCard label="Anggota Aktif" value={isLoading ? "…" : anggotaAktif} icon={UserCheck} />
+            <StatCard label="Event Berjalan" value={activeEvents.length} icon={CalendarDays} />
+            <StatCard label="Deal Aktif" value={activeDeals} icon={Handshake} />
+          </div>
+        </section>
+      </div>
 
       <FinancialSnapshot balance={finance?.balance} monthExpense={finance?.monthExpense} />
 
