@@ -67,6 +67,7 @@ import { Button } from "@/components/ui/button";
 import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { WorkspaceNavigation } from "@/components/navigation/WorkspaceNavigation";
+import myRoomLogo from "@/assets/Logo_aplikasi_MR.png.asset.json";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -313,7 +314,8 @@ function AppLayout() {
       <div className="workspace-content">
         <header className="workspace-header">
           <Link to="/dashboard" className="workspace-wordmark" aria-label="My Room — Dashboard">
-            My Room
+            <img src={myRoomLogo.url} alt="" width="38" height="38" />
+            <span>My Room</span>
           </Link>
           <div className="flex min-w-0 items-center justify-end gap-2 sm:gap-3">
             <ThemeToggle />
