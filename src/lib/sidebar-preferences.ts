@@ -1,18 +1,6 @@
-export const MAX_SIDEBAR_SHORTCUTS = 11;
+export const MAX_SIDEBAR_SHORTCUTS = 9;
 
-const DEFAULT_SHORTCUTS = [
-  "/dashboard",
-  "/workspace",
-  "/calendar",
-  "/letters",
-  "/members",
-  "/finance-summary",
-  "/cash",
-  "/events",
-  "/command-center",
-  "/content-calendar",
-  "/divisions",
-];
+const DEFAULT_SHORTCUTS = ["/dashboard", "/workspace", "/calendar", "/letters", "/members"];
 
 export type SidebarPreferenceItem = { to: string; label: string };
 

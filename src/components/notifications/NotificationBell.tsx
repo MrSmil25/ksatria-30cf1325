@@ -85,10 +85,8 @@ export function NotificationBell() {
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="workspace-header-control relative"
+        <button
+          className="relative flex size-9 items-center justify-center rounded-lg border transition-colors hover:bg-accent"
           aria-label="Notifikasi"
         >
           <Bell className="size-4" />
@@ -97,7 +95,7 @@ export function NotificationBell() {
               {unread > 9 ? "9+" : unread}
             </span>
           )}
-        </Button>
+        </button>
       </PopoverTrigger>
       <PopoverContent align="end" className="w-80 p-0">
         <div className="border-b px-4 py-3">

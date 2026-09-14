@@ -361,7 +361,7 @@ function SidebarCustomizer({
         </span>
       </div>
       <p className="mt-1 text-sm text-muted-foreground">
-        Pilih hingga 11 menu. Lainnya selalu tersedia di posisi terakhir.
+        Pilih hingga 9 menu. Lainnya selalu tersedia di posisi terakhir.
       </p>
       <ol className="mt-4 space-y-2">
         {preferences.pins.map((path, index) => {
@@ -409,7 +409,7 @@ function SidebarCustomizer({
       )}
       <p className="mt-3 text-sm text-muted-foreground" role="status">
         {full
-          ? "11 pintasan terisi. Lepas satu untuk menggantinya."
+          ? "9 pintasan terisi. Lepas satu untuk menggantinya."
           : `${MAX_SIDEBAR_SHORTCUTS - preferences.pins.length} tempat masih tersedia.`}
       </p>
       <Button
