@@ -34,7 +34,9 @@ export function createMyRoom(root: HTMLElement, options: MyRoomOptions): MyRoomH
 let destroyed = false;
 'use strict';
 // Change these values to tune the visual without changing the animation logic.
-const CONFIG={transitionMs:1750,entranceMs:2200,particlesPerLogo:2200,maxPixelRatio:1.6};
+// Perf budget: lighter particle count + capped pixel ratio on modest devices.
+const CORES=(navigator as any).hardwareConcurrency||4,MOBILE=matchMedia('(max-width:700px), (pointer:coarse)').matches,LOWEND=CORES<=4||MOBILE;
+const CONFIG={transitionMs:1750,entranceMs:2200,particlesPerLogo:LOWEND?900:1600,maxPixelRatio:LOWEND?1.15:1.4,ambientMs:LOWEND?42:28};
 const $=(s)=>root.querySelector(s) as any,stage=$('.stage'),panel=$('.account-area'),card=$('.card'),hit=$('.enter-hit'),back=$('.back'),form=$('.form'),slot=$('.logo-slot'),status=$('.status'),pageStatus=$('.page-status'),fallback=$('.fallback'),logoCanvas=$('.logos'),ambient=$('.ambient');
 const media=matchMedia('(prefers-reduced-motion: reduce)'),motionButton=$('.motion');
 let paused=media.matches,opened=false,mode='login',busy=false,loaded=false,transition=null,entranceAt=0,clock=0,last=performance.now(),width=1,height=1,dpr=1,raf=0,offscreen=false;
@@ -70,7 +72,7 @@ function target(i,open){const sign=i?-1:1; // RK at left, UI at right.
  const size=Math.min(200,width*.29,height*.255),separation=Math.min(150,width*.205);
  return {x:width/2+side*separation,y:height*.495+(paused?0:Math.sin(clock*.72+i*1.8)*5),size,rx:paused?0:sy*.15+tilt,ry:paused?side*.08:spin+sx*.45+side*.09+Math.sin(clock*.42)*.11,rz:paused?0:Math.sin(clock*.35+i)*.014};
 }
-function measure(){width=stage.clientWidth;height=stage.clientHeight;dpr=Math.min(window.devicePixelRatio||1,CONFIG.maxPixelRatio);[ambient,logoCanvas,atomCanvas].forEach(c=>{const w=Math.round(width*dpr),h=Math.round(height*dpr);if(c.width!==w||c.height!==h){c.width=w;c.height=h}});if(!panel.hidden){/* card transform must not affect target anchor */logoTargetY=panel.offsetTop+parseFloat(getComputedStyle(panel).paddingTop)+parseFloat(getComputedStyle(card).paddingTop)+slot.offsetHeight/2;}if(gpu)gpu.gl.viewport(0,0,logoCanvas.width,logoCanvas.height);layoutDirty=false;}
+function measure(){width=stage.clientWidth;height=stage.clientHeight;dpr=Math.min(window.devicePixelRatio||1,CONFIG.maxPixelRatio);adpr=Math.min(dpr,1);[logoCanvas,atomCanvas].forEach(c=>{const w=Math.round(width*dpr),h=Math.round(height*dpr);if(c.width!==w||c.height!==h){c.width=w;c.height=h}});{const w=Math.round(width*adpr),h=Math.round(height*adpr);if(ambient.width!==w||ambient.height!==h){ambient.width=w;ambient.height=h}}if(!panel.hidden){/* card transform must not affect target anchor */logoTargetY=panel.offsetTop+parseFloat(getComputedStyle(panel).paddingTop)+parseFloat(getComputedStyle(card).paddingTop)+slot.offsetHeight/2;}if(gpu)gpu.gl.viewport(0,0,logoCanvas.width,logoCanvas.height);layoutDirty=false;}
 function begin(open){
  if(busy||opened===open)return;
  if(layoutDirty)measure();const source=[0,1].map(i=>({...pose[i]||target(i,opened)}));
