@@ -34,10 +34,12 @@ export function createMyRoom(root: HTMLElement, options: MyRoomOptions): MyRoomH
 let destroyed = false;
 'use strict';
 // Change these values to tune the visual without changing the animation logic.
-const CONFIG={transitionMs:1750,entranceMs:2200,particlesPerLogo:2200,maxPixelRatio:1.6};
+// Perf budget: lighter particle count + capped pixel ratio on modest devices.
+const CORES=(navigator as any).hardwareConcurrency||4,MOBILE=matchMedia('(max-width:700px), (pointer:coarse)').matches,LOWEND=CORES<=4||MOBILE;
+const CONFIG={transitionMs:1750,entranceMs:2200,particlesPerLogo:LOWEND?900:1600,maxPixelRatio:LOWEND?1.15:1.4,ambientMs:LOWEND?42:28};
 const $=(s)=>root.querySelector(s) as any,stage=$('.stage'),panel=$('.account-area'),card=$('.card'),hit=$('.enter-hit'),back=$('.back'),form=$('.form'),slot=$('.logo-slot'),status=$('.status'),pageStatus=$('.page-status'),fallback=$('.fallback'),logoCanvas=$('.logos'),ambient=$('.ambient');
 const media=matchMedia('(prefers-reduced-motion: reduce)'),motionButton=$('.motion');
-let paused=media.matches,opened=false,mode='login',busy=false,loaded=false,transition=null,entranceAt=0,clock=0,last=performance.now(),width=1,height=1,dpr=1,raf=0,offscreen=false;
+let paused=media.matches,opened=false,mode='login',busy=false,loaded=false,transition=null,entranceAt=0,clock=0,last=performance.now(),width=1,height=1,dpr=1,adpr=1,raf=0,offscreen=false,lastAmbient=0,atomsDirty=false;
 let busy2=false;void busy2;
 let px=0,py=0,sx=0,sy=0,dragging=false,drag=null,spin=0,tilt=0,velocity=0,ignoreClick=false;
 const atomCanvas=$('.atoms'),fx=atomCanvas.getContext('2d');
@@ -70,7 +72,7 @@ function target(i,open){const sign=i?-1:1; // RK at left, UI at right.
  const size=Math.min(200,width*.29,height*.255),separation=Math.min(150,width*.205);
  return {x:width/2+side*separation,y:height*.495+(paused?0:Math.sin(clock*.72+i*1.8)*5),size,rx:paused?0:sy*.15+tilt,ry:paused?side*.08:spin+sx*.45+side*.09+Math.sin(clock*.42)*.11,rz:paused?0:Math.sin(clock*.35+i)*.014};
 }
-function measure(){width=stage.clientWidth;height=stage.clientHeight;dpr=Math.min(window.devicePixelRatio||1,CONFIG.maxPixelRatio);[ambient,logoCanvas,atomCanvas].forEach(c=>{const w=Math.round(width*dpr),h=Math.round(height*dpr);if(c.width!==w||c.height!==h){c.width=w;c.height=h}});if(!panel.hidden){/* card transform must not affect target anchor */logoTargetY=panel.offsetTop+parseFloat(getComputedStyle(panel).paddingTop)+parseFloat(getComputedStyle(card).paddingTop)+slot.offsetHeight/2;}if(gpu)gpu.gl.viewport(0,0,logoCanvas.width,logoCanvas.height);layoutDirty=false;}
+function measure(){width=stage.clientWidth;height=stage.clientHeight;dpr=Math.min(window.devicePixelRatio||1,CONFIG.maxPixelRatio);adpr=Math.min(dpr,1);[logoCanvas,atomCanvas].forEach(c=>{const w=Math.round(width*dpr),h=Math.round(height*dpr);if(c.width!==w||c.height!==h){c.width=w;c.height=h}});{const w=Math.round(width*adpr),h=Math.round(height*adpr);if(ambient.width!==w||ambient.height!==h){ambient.width=w;ambient.height=h}}if(!panel.hidden){/* card transform must not affect target anchor */logoTargetY=panel.offsetTop+parseFloat(getComputedStyle(panel).paddingTop)+parseFloat(getComputedStyle(card).paddingTop)+slot.offsetHeight/2;}if(gpu)gpu.gl.viewport(0,0,logoCanvas.width,logoCanvas.height);layoutDirty=false;}
 function begin(open){
  if(busy||opened===open)return;
  if(layoutDirty)measure();const source=[0,1].map(i=>({...pose[i]||target(i,opened)}));
@@ -125,20 +127,21 @@ async function init(){
  const response=await fetch(MODEL_URL);if(!response.ok)throw Error('model fetch failed');const packed=Uint8Array.from(atob((await response.text()).trim()),c=>c.charCodeAt(0));
  const bytes=await new Response(new Blob([packed]).stream().pipeThrough(new DecompressionStream('gzip'))).arrayBuffer(),length=new DataView(bytes).getUint32(0,true),meta=JSON.parse(new TextDecoder().decode(new Uint8Array(bytes,4,length))),base=4+length;
  gpu=createRenderer();
- for(const name of ['RK','UI']){const parts=meta[name].map(m=>{const p=new Float32Array(m.v),view=new DataView(bytes,base+m.offset,m.v*2+m.i*2);for(let i=0;i<m.v;i++)p[i]=view.getInt16(i*2,true)/10000;const idx=new Uint16Array(m.i);for(let i=0;i<m.i;i++)idx[i]=view.getUint16(m.v*2+i*2,true);return {p,idx,m}});const low=[Infinity,Infinity,Infinity],high=[-Infinity,-Infinity,-Infinity];for(const part of parts)for(let i=0;i<part.p.length;i++){const axis=i%3;low[axis]=Math.min(low[axis],part.p[i]);high[axis]=Math.max(high[axis],part.p[i]);}const unit=1/Math.max(high[0]-low[0],high[1]-low[1]);const meshes=parts.map(({p,idx,m})=>{for(let i=0;i<p.length;i++)p[i]=(p[i]-(low[i%3]+high[i%3])/2)*unit;return prepareMesh(p,idx,m.color,m.metal)});models.push({meshes,points:sampleModel(meshes,width<600?1300:CONFIG.particlesPerLogo)});}
+ for(const name of ['RK','UI']){const parts=meta[name].map(m=>{const p=new Float32Array(m.v),view=new DataView(bytes,base+m.offset,m.v*2+m.i*2);for(let i=0;i<m.v;i++)p[i]=view.getInt16(i*2,true)/10000;const idx=new Uint16Array(m.i);for(let i=0;i<m.i;i++)idx[i]=view.getUint16(m.v*2+i*2,true);return {p,idx,m}});const low=[Infinity,Infinity,Infinity],high=[-Infinity,-Infinity,-Infinity];for(const part of parts)for(let i=0;i<part.p.length;i++){const axis=i%3;low[axis]=Math.min(low[axis],part.p[i]);high[axis]=Math.max(high[axis],part.p[i]);}const unit=1/Math.max(high[0]-low[0],high[1]-low[1]);const meshes=parts.map(({p,idx,m})=>{for(let i=0;i<p.length;i++)p[i]=(p[i]-(low[i%3]+high[i%3])/2)*unit;return prepareMesh(p,idx,m.color,m.metal)});models.push({meshes,points:sampleModel(meshes,CONFIG.particlesPerLogo)});}
  loaded=true;fallback.hidden=true;entranceAt=performance.now();pageStatus.textContent='';layoutDirty=true;
  }catch(error){gpu=null;fallback.hidden=false;pageStatus.textContent='Mode ringan aktif. Klik untuk masuk.';console.warn('My Room: using embedded vector logo fallback.');}
  requestDraw();
 }
 logoCanvas.addEventListener('webglcontextlost',e=>{e.preventDefault();gpu=null;loaded=false;fallback.hidden=false;pageStatus.textContent='Mode ringan aktif. Klik untuk masuk.';if(transition)finishTransition();requestDraw()});
 function project(p,pose){let x=p.x,y=p.y,z=p.z;const cx=Math.cos(pose.rx),ax=Math.sin(pose.rx),cy=Math.cos(pose.ry),ay=Math.sin(pose.ry),cz=Math.cos(pose.rz),az=Math.sin(pose.rz);[y,z]=[cx*y-ax*z,ax*y+cx*z];[x,z]=[cy*x+ay*z,-ay*x+cy*z];return {x:pose.x+(cz*x-az*y)*pose.size,y:pose.y-(az*x+cz*y)*pose.size};}
-const dust=Array.from({length:64},()=>({x:random(),y:random(),s:random(),a:random()*6.28}));
+const dust=Array.from({length:LOWEND?26:44},()=>({x:random(),y:random(),s:random(),a:random()*6.28}));
 function drawAmbient(now){
- if(!ctx)return;ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,width,height);const opacity=opened?.28:1;
+ if(!ctx)return;ctx.setTransform(adpr,0,0,adpr,0,0);ctx.clearRect(0,0,width,height);const opacity=opened?.28:1;
  // A restrained, flowing particle horizon with cursor parallax.
- const cols=width<600?52:92,rows=14;
- for(let row=0;row<rows;row++){const depth=row/(rows-1);ctx.fillStyle=`rgba(109,150,222,${(.02+depth*.10)*opacity})`;ctx.beginPath();for(let col=0;col<cols;col++){const u=col/(cols-1),x=u*width*1.18-width*.09+sx*depth*19;const wave=Math.sin(u*9+clock*.18+depth*3)*15+Math.sin(u*16-clock*.14+depth*2)*5;const y=height*.80+depth*depth*height*.2+wave*(.3+depth*.7)+sy*depth*9;const radius=.45+depth*.55;ctx.moveTo(x+radius,y);ctx.arc(x,y,radius,0,Math.PI*2)}ctx.fill();}
- for(const p of dust){const x=p.x*width+Math.sin(clock*.1+p.a)*7+sx*p.s*12,y=p.y*height+Math.cos(clock*.08+p.a)*8;const a=(.04+p.s*.16)*opacity;ctx.fillStyle=`rgba(165,192,237,${a})`;ctx.beginPath();ctx.arc(x,y,.4+p.s*.6,0,Math.PI*2);ctx.fill();}
+ // Fewer, slightly larger dots keep the same look at a fraction of the draw cost.
+ const cols=LOWEND||width<600?34:60,rows=9;
+ for(let row=0;row<rows;row++){const depth=row/(rows-1);ctx.fillStyle=`rgba(109,150,222,${(.03+depth*.13)*opacity})`;ctx.beginPath();for(let col=0;col<cols;col++){const u=col/(cols-1),x=u*width*1.18-width*.09+sx*depth*19;const wave=Math.sin(u*9+clock*.18+depth*3)*15+Math.sin(u*16-clock*.14+depth*2)*5;const y=height*.80+depth*depth*height*.2+wave*(.3+depth*.7)+sy*depth*9;const radius=.55+depth*.65;ctx.moveTo(x+radius,y);ctx.arc(x,y,radius,0,Math.PI*2)}ctx.fill();}
+ ctx.fillStyle=`rgba(165,192,237,${.12*opacity})`;ctx.beginPath();for(const p of dust){const x=p.x*width+Math.sin(clock*.1+p.a)*7+sx*p.s*12,y=p.y*height+Math.cos(clock*.08+p.a)*8,r=.4+p.s*.7;ctx.moveTo(x+r,y);ctx.arc(x,y,r,0,Math.PI*2);}ctx.fill();
  if(transition){const t=clamp((now-transition.start)/CONFIG.transitionMs);ctx.strokeStyle=`rgba(160,193,255,${Math.sin(t*Math.PI)*.08})`;ctx.lineWidth=1;ctx.beginPath();ctx.ellipse(width/2,height*.50,Math.min(width*.46,340)*(t+.1),80*(t+.1),-.1,0,Math.PI*2);ctx.stroke();}
 }
 function drawParticles(model,from,to,t,entrance=false){
@@ -154,7 +157,10 @@ function drawMesh(model,p,alpha){
 function requestDraw(){if(destroyed)return;if(!raf&&!document.hidden&&!offscreen)raf=requestAnimationFrame(frame)}
 function frame(now:number){
  raf=0;if(destroyed||document.hidden||offscreen)return;if(layoutDirty)measure();const dt=Math.min((now-last)/1000,.05);last=now;if(!paused){clock+=dt;sx+=(px-sx)*(1-Math.exp(-dt*5));sy+=(py-sy)*(1-Math.exp(-dt*5));if(!dragging&&!opened){spin+=velocity;velocity*=Math.exp(-dt*7);tilt*=Math.exp(-dt*2.5);}}
- drawAmbient(now);if(fx){fx.setTransform(dpr,0,0,dpr,0,0);fx.clearRect(0,0,width,height);}if(gpu){gpu.gl.clear(gpu.gl.COLOR_BUFFER_BIT|gpu.gl.DEPTH_BUFFER_BIT);gpu.gl.useProgram(gpu.program);}
+  if(now-lastAmbient>=CONFIG.ambientMs||transition){lastAmbient=now;drawAmbient(now);}
+ const atomsActive=!paused&&(!!transition||(loaded&&!opened&&(now-entranceAt)<CONFIG.entranceMs));
+ if(fx&&(atomsActive||atomsDirty)){fx.setTransform(dpr,0,0,dpr,0,0);fx.clearRect(0,0,width,height);atomsDirty=atomsActive;}
+ if(gpu){gpu.gl.clear(gpu.gl.COLOR_BUFFER_BIT|gpu.gl.DEPTH_BUFFER_BIT);gpu.gl.useProgram(gpu.program);}
  if(transition&&now-transition.start>=CONFIG.transitionMs)finishTransition();
  const t=transition?clamp((now-transition.start)/CONFIG.transitionMs):0,entry=paused?1:clamp((now-entranceAt)/CONFIG.entranceMs);
  if(transition&&transition.open&&t>.43)card.classList.add('shown');
