@@ -39,7 +39,7 @@ const CORES=(navigator as any).hardwareConcurrency||4,MOBILE=matchMedia('(max-wi
 const CONFIG={transitionMs:1750,entranceMs:2200,particlesPerLogo:LOWEND?900:1600,maxPixelRatio:LOWEND?1.15:1.4,ambientMs:LOWEND?42:28};
 const $=(s)=>root.querySelector(s) as any,stage=$('.stage'),panel=$('.account-area'),card=$('.card'),hit=$('.enter-hit'),back=$('.back'),form=$('.form'),slot=$('.logo-slot'),status=$('.status'),pageStatus=$('.page-status'),fallback=$('.fallback'),logoCanvas=$('.logos'),ambient=$('.ambient');
 const media=matchMedia('(prefers-reduced-motion: reduce)'),motionButton=$('.motion');
-let paused=media.matches,opened=false,mode='login',busy=false,loaded=false,transition=null,entranceAt=0,clock=0,last=performance.now(),width=1,height=1,dpr=1,adpr=1,raf=0,offscreen=false,lastAmbient=0;
+let paused=media.matches,opened=false,mode='login',busy=false,loaded=false,transition=null,entranceAt=0,clock=0,last=performance.now(),width=1,height=1,dpr=1,adpr=1,raf=0,offscreen=false,lastAmbient=0,atomsDirty=false;
 let busy2=false;void busy2;
 let px=0,py=0,sx=0,sy=0,dragging=false,drag=null,spin=0,tilt=0,velocity=0,ignoreClick=false;
 const atomCanvas=$('.atoms'),fx=atomCanvas.getContext('2d');
