@@ -11,6 +11,8 @@ import {
   ArrowRight,
   Bell,
   ClipboardCheck,
+  Sun,
+
 } from "lucide-react";
 import { useDivisions, useMyProfile, useProfiles, isSupervisor } from "@/hooks/useProfile";
 import { fetchDeals } from "@/lib/deals";
