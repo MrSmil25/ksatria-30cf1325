@@ -375,12 +375,28 @@ function DashboardPage() {
   return (
     <div className="dashboard-panorama mx-auto max-w-[1600px] space-y-7">
       <section className="dashboard-panorama-hero dash-enter" aria-labelledby="dashboard-heading">
+        <div className="dashboard-team-photo" aria-hidden="true">
+          {!teamPhotoFailed && (
+            <img
+              src={teamPhoto.url}
+              alt=""
+              width="1024"
+              height="768"
+              data-loaded={teamPhotoLoaded}
+              onLoad={() => setTeamPhotoLoaded(true)}
+              onError={() => setTeamPhotoFailed(true)}
+            />
+          )}
+        </div>
         <div className="dashboard-hero-copy">
           <p className="dashboard-hero-date">{today}</p>
           <h1 id="dashboard-heading">{greetingName ? `Halo, ${greetingName}!` : "Halo!"}</h1>
           <p className="dashboard-hero-role">
             {[profile?.role, org?.org_name ?? "My Room"].filter(Boolean).join(" · ")}
           </p>
+          <blockquote className="dashboard-hero-quote">
+            “Kolaborasi hari ini, dampak lebih besar untuk masa depan.”
+          </blockquote>
           <div className="dashboard-hero-actions">
             <Link to="/workspace" className="dashboard-hero-primary">
               <BriefcaseBusiness className="size-5" />
@@ -391,39 +407,28 @@ function DashboardPage() {
             </Link>
           </div>
         </div>
-        <div className="dashboard-team-photo" aria-label="Foto tim My Room">
-          {!teamPhotoFailed && (
-            <img
-              src={teamPhoto.url}
-              alt="Tim My Room mengenakan jaket kuning berfoto bersama"
-              width="1024"
-              height="768"
-              data-loaded={teamPhotoLoaded}
-              onLoad={() => setTeamPhotoLoaded(true)}
-              onError={() => setTeamPhotoFailed(true)}
-            />
-          )}
+        <div className="dashboard-hero-summary" aria-label="Ringkasan hari ini">
+          <p className="dashboard-hero-summary-title">
+            <Sun /> Ringkasan hari ini
+          </p>
+          <span className="dashboard-daily-item">
+            <ClipboardCheck />{" "}
+            {assignmentsLoading ? "Memuat tugas…" : `${pendingAssignments} tugas perlu dilihat`}
+          </span>
+          <span className="dashboard-daily-item">
+            <CalendarDays /> {todayEvents.length} agenda hari ini
+          </span>
+          <Link to="/notifications" className="dashboard-daily-item">
+            <Bell />{" "}
+            {unreadLoading
+              ? "Memuat notifikasi…"
+              : unreadError
+                ? "Notifikasi belum termuat"
+                : `${unreadNotifications} notifikasi baru`}
+          </Link>
         </div>
       </section>
 
-      <section className="dashboard-daily-summary dash-enter" aria-label="Ringkasan hari ini">
-        <p>Ringkasan hari ini</p>
-        <span className="dashboard-daily-item">
-          <ClipboardCheck />{" "}
-          {assignmentsLoading ? "Memuat tugas…" : `${pendingAssignments} tugas perlu dilihat`}
-        </span>
-        <span className="dashboard-daily-item">
-          <CalendarDays /> {todayEvents.length} agenda hari ini
-        </span>
-        <Link to="/notifications" className="dashboard-daily-item">
-          <Bell />{" "}
-          {unreadLoading
-            ? "Memuat notifikasi…"
-            : unreadError
-              ? "Notifikasi belum termuat"
-              : `${unreadNotifications} notifikasi baru`}
-        </Link>
-      </section>
 
       <QuickActionsGrid pendingLabel={pendingAssignmentLabel} />
 
