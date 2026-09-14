@@ -157,7 +157,10 @@ function drawMesh(model,p,alpha){
 function requestDraw(){if(destroyed)return;if(!raf&&!document.hidden&&!offscreen)raf=requestAnimationFrame(frame)}
 function frame(now:number){
  raf=0;if(destroyed||document.hidden||offscreen)return;if(layoutDirty)measure();const dt=Math.min((now-last)/1000,.05);last=now;if(!paused){clock+=dt;sx+=(px-sx)*(1-Math.exp(-dt*5));sy+=(py-sy)*(1-Math.exp(-dt*5));if(!dragging&&!opened){spin+=velocity;velocity*=Math.exp(-dt*7);tilt*=Math.exp(-dt*2.5);}}
- if(now-lastAmbient>=CONFIG.ambientMs||transition){lastAmbient=now;drawAmbient(now);}if(fx){fx.setTransform(dpr,0,0,dpr,0,0);fx.clearRect(0,0,width,height);}if(gpu){gpu.gl.clear(gpu.gl.COLOR_BUFFER_BIT|gpu.gl.DEPTH_BUFFER_BIT);gpu.gl.useProgram(gpu.program);}
+  if(now-lastAmbient>=CONFIG.ambientMs||transition){lastAmbient=now;drawAmbient(now);}
+ const atomsActive=!paused&&(!!transition||(loaded&&!opened&&(now-entranceAt)<CONFIG.entranceMs));
+ if(fx&&(atomsActive||atomsDirty)){fx.setTransform(dpr,0,0,dpr,0,0);fx.clearRect(0,0,width,height);atomsDirty=atomsActive;}
+ if(gpu){gpu.gl.clear(gpu.gl.COLOR_BUFFER_BIT|gpu.gl.DEPTH_BUFFER_BIT);gpu.gl.useProgram(gpu.program);}
  if(transition&&now-transition.start>=CONFIG.transitionMs)finishTransition();
  const t=transition?clamp((now-transition.start)/CONFIG.transitionMs):0,entry=paused?1:clamp((now-entranceAt)/CONFIG.entranceMs);
  if(transition&&transition.open&&t>.43)card.classList.add('shown');
