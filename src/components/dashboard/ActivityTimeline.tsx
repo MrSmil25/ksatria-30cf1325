@@ -19,7 +19,7 @@ export function ActivityTimeline({ items }: { items: ActivityItem[] }) {
       <div className="dashboard-section-heading">
         <div>
           <p className="dashboard-section-kicker">TERBARU</p>
-          <h2 id="activity-heading">Aktivitas Organisasi</h2>
+          <h2 id="activity-heading">Aktivitas Terbaru</h2>
         </div>
       </div>
 
@@ -28,7 +28,7 @@ export function ActivityTimeline({ items }: { items: ActivityItem[] }) {
           <span className="dash-icon-bubble size-12 rounded-2xl">
             <Activity className="size-5" />
           </span>
-          <p className="mt-4 font-semibold text-dash-navy">Belum ada aktivitas</p>
+          <p className="mt-4 font-semibold text-dash-navy">Belum ada aktivitas terbaru</p>
           <p className="mt-1 text-sm text-dash-muted">
             Organisasi akan berkembang seiring aktivitas berjalan.
           </p>

@@ -11,8 +11,6 @@ import {
   ArrowRight,
   Bell,
   ClipboardCheck,
-  Sun,
-
 } from "lucide-react";
 import { useDivisions, useMyProfile, useProfiles, isSupervisor } from "@/hooks/useProfile";
 import { fetchDeals } from "@/lib/deals";
@@ -377,28 +375,33 @@ function DashboardPage() {
   return (
     <div className="dashboard-panorama mx-auto max-w-[1600px] space-y-7">
       <section className="dashboard-panorama-hero dash-enter" aria-labelledby="dashboard-heading">
-        <div className="dashboard-team-photo" aria-hidden="true">
-          {!teamPhotoFailed && (
-            <img
-              src={teamPhoto.url}
-              alt=""
-              width="1024"
-              height="768"
-              data-loaded={teamPhotoLoaded}
-              onLoad={() => setTeamPhotoLoaded(true)}
-              onError={() => setTeamPhotoFailed(true)}
-            />
-          )}
-        </div>
         <div className="dashboard-hero-copy">
           <p className="dashboard-hero-date">{today}</p>
           <h1 id="dashboard-heading">{greetingName ? `Halo, ${greetingName}!` : "Halo!"}</h1>
           <p className="dashboard-hero-role">
             {[profile?.role, org?.org_name ?? "My Room"].filter(Boolean).join(" · ")}
           </p>
-          <blockquote className="dashboard-hero-quote">
+          <blockquote className="dashboard-leadership-quote">
             “Kolaborasi hari ini, dampak lebih besar untuk masa depan.”
           </blockquote>
+          <div className="dashboard-daily-summary" aria-label="Ringkasan hari ini">
+            <p>Ringkasan hari ini</p>
+            <span className="dashboard-daily-item">
+              <ClipboardCheck />{" "}
+              {assignmentsLoading ? "Memuat tugas…" : `${pendingAssignments} tugas perlu dilihat`}
+            </span>
+            <span className="dashboard-daily-item">
+              <CalendarDays /> {todayEvents.length} agenda hari ini
+            </span>
+            <Link to="/notifications" className="dashboard-daily-item">
+              <Bell />{" "}
+              {unreadLoading
+                ? "Memuat notifikasi…"
+                : unreadError
+                  ? "Notifikasi belum termuat"
+                  : `${unreadNotifications} notifikasi baru`}
+            </Link>
+          </div>
           <div className="dashboard-hero-actions">
             <Link to="/workspace" className="dashboard-hero-primary">
               <BriefcaseBusiness className="size-5" />
@@ -409,53 +412,47 @@ function DashboardPage() {
             </Link>
           </div>
         </div>
-        <div className="dashboard-hero-summary" aria-label="Ringkasan hari ini">
-          <p className="dashboard-hero-summary-title">
-            <Sun /> Ringkasan hari ini
-          </p>
-          <span className="dashboard-daily-item">
-            <ClipboardCheck />{" "}
-            {assignmentsLoading ? "Memuat tugas…" : `${pendingAssignments} tugas perlu dilihat`}
-          </span>
-          <span className="dashboard-daily-item">
-            <CalendarDays /> {todayEvents.length} agenda hari ini
-          </span>
-          <Link to="/notifications" className="dashboard-daily-item">
-            <Bell />{" "}
-            {unreadLoading
-              ? "Memuat notifikasi…"
-              : unreadError
-                ? "Notifikasi belum termuat"
-                : `${unreadNotifications} notifikasi baru`}
-          </Link>
+        <div className="dashboard-team-photo" aria-label="Foto tim My Room">
+          {!teamPhotoFailed && (
+            <img
+              src={teamPhoto.url}
+              alt="Tim My Room mengenakan jaket kuning berfoto bersama"
+              width="1024"
+              height="768"
+              data-loaded={teamPhotoLoaded}
+              onLoad={() => setTeamPhotoLoaded(true)}
+              onError={() => setTeamPhotoFailed(true)}
+            />
+          )}
         </div>
       </section>
-
 
       <QuickActionsGrid pendingLabel={pendingAssignmentLabel} />
 
-      <AttentionCenter items={attentionItems} />
+      <div className="dashboard-operations-grid dash-stagger">
+        <AttentionCenter items={attentionItems} />
 
-      <ActivityTimeline items={activityItems} />
+        <ActivityTimeline items={activityItems} />
 
-      <section
-        id="ringkasan-organisasi"
-        className="dashboard-section dash-enter"
-        aria-labelledby="summary-heading"
-      >
-        <div className="dashboard-section-heading">
-          <div>
-            <p className="dashboard-section-kicker">ORGANIZATION PULSE</p>
-            <h2 id="summary-heading">Organisasi Hari Ini</h2>
+        <section
+          id="ringkasan-organisasi"
+          className="dashboard-section dash-enter"
+          aria-labelledby="summary-heading"
+        >
+          <div className="dashboard-section-heading">
+            <div>
+              <p className="dashboard-section-kicker">ORGANISASI</p>
+              <h2 id="summary-heading">Organisasi Hari Ini</h2>
+            </div>
           </div>
-        </div>
-        <div className="dashboard-pulse-grid dash-stagger">
-          <StatCard label="Total Anggota" value={isLoading ? "…" : totalAnggota} icon={Users} />
-          <StatCard label="Anggota Aktif" value={isLoading ? "…" : anggotaAktif} icon={UserCheck} />
-          <StatCard label="Event Berjalan" value={activeEvents.length} icon={CalendarDays} />
-          <StatCard label="Deal Aktif" value={activeDeals} icon={Handshake} />
-        </div>
-      </section>
+          <div className="dashboard-pulse-grid dash-stagger">
+            <StatCard label="Total Anggota" value={isLoading ? "…" : totalAnggota} icon={Users} />
+            <StatCard label="Anggota Aktif" value={isLoading ? "…" : anggotaAktif} icon={UserCheck} />
+            <StatCard label="Event Berjalan" value={activeEvents.length} icon={CalendarDays} />
+            <StatCard label="Deal Aktif" value={activeDeals} icon={Handshake} />
+          </div>
+        </section>
+      </div>
 
       <FinancialSnapshot balance={finance?.balance} monthExpense={finance?.monthExpense} />
 

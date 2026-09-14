@@ -1,5 +1,6 @@
 import { Moon, Sun } from "lucide-react";
 import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
 
 type Theme = "light" | "dark";
 
@@ -29,15 +30,17 @@ export function ThemeToggle() {
   };
 
   return (
-    <button
+    <Button
       type="button"
+      variant="ghost"
+      size="icon"
       onClick={toggle}
       aria-label={theme === "dark" ? "Aktifkan mode terang" : "Aktifkan mode gelap"}
       title={theme === "dark" ? "Mode terang" : "Mode gelap"}
-      className="inline-flex size-9 items-center justify-center rounded-lg border border-border text-foreground/80 transition-colors hover:bg-accent hover:text-accent-foreground"
+      className="workspace-header-control"
     >
       {theme === "dark" ? <Sun className="size-4" /> : <Moon className="size-4" />}
-    </button>
+    </Button>
   );
 }
 

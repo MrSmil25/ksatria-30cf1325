@@ -252,6 +252,8 @@ function AppLayout() {
   const categoryAdmin = canManageCategories(profile?.role);
   const sectionAdmin = canManageSections(profile?.role);
   const pendingAssignments = usePendingAssignmentCount();
+  const shortName =
+    profile?.nickname?.trim() || profile?.full_name?.trim().split(/\s+/)[0] || "Pengguna";
   const profileDivision =
     (profile as { division?: string | null } | null | undefined)?.division ?? null;
 
@@ -334,7 +336,7 @@ function AppLayout() {
                   />
                   <span className="hidden min-w-0 text-left md:block">
                     <span className="block max-w-40 truncate text-sm font-semibold">
-                      {profile?.full_name ?? "Pengguna"}
+                      {shortName}
                     </span>
                     <span className="block max-w-40 truncate text-xs text-muted-foreground">
                       {profile?.role ?? "Anggota"}
