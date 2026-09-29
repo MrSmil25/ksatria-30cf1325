@@ -10,7 +10,7 @@ import {
 } from "@/components/cash/PaymentHistoryDialog";
 import { useDivisions, useMyProfile } from "@/hooks/useProfile";
 import { formatDateID, formatRupiah, relativeTime } from "@/lib/format";
-import { uploadDocument } from "@/lib/fund-requests";
+import { PROOF_ACCEPT, PROOF_FORMAT_HINT, uploadDocument } from "@/lib/fund-requests";
 import { ReceiptPreview } from "@/components/fund-requests/ReceiptPreview";
 import {
   COLLECTION_KINDS,
@@ -403,10 +403,11 @@ function ClaimDialog({ bill, onClose }: { bill: CollectionPayment | null; onClos
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="proof">Bukti Pembayaran (wajib)</Label>
+            <p className="text-xs text-muted-foreground">{PROOF_FORMAT_HINT}</p>
             <Input
               id="proof"
               type="file"
-              accept="image/*,application/pdf"
+              accept={PROOF_ACCEPT}
               onChange={(e) => setFile(e.target.files?.[0] ?? null)}
             />
           </div>
@@ -995,10 +996,11 @@ function ExpensesTab({ canRecord }: { canRecord: boolean }) {
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="eproof">Bukti (opsional)</Label>
+              <p className="text-xs text-muted-foreground">{PROOF_FORMAT_HINT}</p>
               <Input
                 id="eproof"
                 type="file"
-                accept="image/*,application/pdf"
+                accept={PROOF_ACCEPT}
                 onChange={(e) => setFile(e.target.files?.[0] ?? null)}
               />
             </div>

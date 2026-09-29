@@ -24,6 +24,8 @@ import {
 import { BreakdownEditor } from "./BreakdownEditor";
 import { formatRupiah } from "@/lib/format";
 import {
+  PROOF_ACCEPT,
+  PROOF_FORMAT_HINT,
   URGENCIES,
   URGENCY_LABEL,
   fetchEventOptions,
@@ -150,6 +152,7 @@ export function ReimbursementFormDialog({ open, onOpenChange, onSubmit, saving }
 
           <div className="space-y-1.5 rounded-lg border border-dashed p-3">
             <Label>Struk / Bukti Pembayaran *</Label>
+            <p className="text-xs text-muted-foreground">{PROOF_FORMAT_HINT}</p>
             <div className="flex flex-wrap items-center gap-2">
               <Button asChild variant="outline" size="sm" disabled={uploading}>
                 <label className="cursor-pointer">
@@ -157,7 +160,7 @@ export function ReimbursementFormDialog({ open, onOpenChange, onSubmit, saving }
                   {uploading ? "Mengunggah…" : receiptPath ? "Ganti Struk" : "Unggah Struk"}
                   <input
                     type="file"
-                    accept="image/*,application/pdf"
+                    accept={PROOF_ACCEPT}
                     className="hidden"
                     onChange={(e) => handleUpload(e.target.files?.[0])}
                   />
