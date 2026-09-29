@@ -44,7 +44,7 @@ export function toISODate(d: Date) {
   return `${d.getFullYear()}-${m}-${day}`;
 }
 export function shiftWeek(week: string, delta: number) {
-  const [y, m, d] = week.split("-").map(Number);
+  const [y = 1970, m = 1, d = 1] = week.split("-").map(Number);
   return toISODate(new Date(y, m - 1, d + delta * 7));
 }
 
