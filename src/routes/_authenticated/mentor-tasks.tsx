@@ -162,8 +162,8 @@ function DetailDialog({
 
   function onPickFile(e: ChangeEvent<HTMLInputElement>) {
     const picked = e.target.files?.[0] ?? null;
-    if (picked && !["image/png", "image/jpeg"].includes(picked.type)) {
-      toast.error("Lampiran harus berupa gambar PNG atau JPG.");
+    if (picked && !["image/png", "image/jpeg", "application/pdf"].includes(picked.type)) {
+      toast.error("Lampiran harus berupa gambar PNG/JPG atau dokumen PDF.");
       e.target.value = "";
       setFile(null);
       return;
@@ -241,11 +241,11 @@ function DetailDialog({
                 )}
                 <Input
                   type="file"
-                  accept="image/png,image/jpeg,.png,.jpg,.jpeg"
+                  accept="image/png,image/jpeg,application/pdf,.png,.jpg,.jpeg,.pdf"
                   onChange={onPickFile}
                 />
                 <p className="text-xs text-muted-foreground">
-                  Format yang didukung: PNG atau JPG.
+                  Format yang didukung: PNG, JPG, atau PDF.
                 </p>
               </div>
             )}
