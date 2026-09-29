@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ChangeEvent } from "react";
 import { GraduationCap, Lock, Paperclip } from "lucide-react";
 import { toast } from "sonner";
 import { format, isBefore } from "date-fns";
@@ -160,7 +160,7 @@ function DetailDialog({
   const emptyAnswer =
     (item?.allow_text ? !content.trim() : true) && !file && !submission?.file_url;
 
-  function onPickFile(e: React.ChangeEvent<HTMLInputElement>) {
+  function onPickFile(e: ChangeEvent<HTMLInputElement>) {
     const picked = e.target.files?.[0] ?? null;
     if (picked && !["image/png", "image/jpeg"].includes(picked.type)) {
       toast.error("Lampiran harus berupa gambar PNG atau JPG.");
