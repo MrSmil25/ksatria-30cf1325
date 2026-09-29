@@ -78,7 +78,7 @@ const rupiah = (n: number) => "Rp " + n.toLocaleString("id-ID");
 const fmtDeadline = (s: string) =>
   new Date(s).toLocaleString("id-ID", { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
 const fmtWeek = (w: string) => {
-  const [y, m, d] = w.split("-").map(Number);
+  const [y = 1970, m = 1, d = 1] = w.split("-").map(Number);
   const a = new Date(y, m - 1, d);
   const b = new Date(y, m - 1, d + 6);
   const o: Intl.DateTimeFormatOptions = { day: "numeric", month: "short" };
