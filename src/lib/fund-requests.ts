@@ -148,8 +148,24 @@ export async function fetchEventOptions(): Promise<{ id: string; name: string; d
   return (data ?? []) as { id: string; name: string; date_start?: string | null; date_end?: string | null }[];
 }
 
+/** Format bukti yang diterima di seluruh aplikasi: PNG, JPG, JPEG, atau PDF. */
+export const PROOF_ACCEPT = "image/png,image/jpeg,application/pdf,.png,.jpg,.jpeg,.pdf";
+export const PROOF_FORMAT_HINT = "Format yang didukung: PNG, JPG, JPEG, atau PDF.";
+
+const PROOF_MIME_TYPES = new Set(["image/png", "image/jpeg", "image/jpg", "application/pdf"]);
+const PROOF_EXTENSIONS = new Set(["png", "jpg", "jpeg", "pdf"]);
+
+/** Tolak file dengan tipe yang jelas bukan PNG/JPG/JPEG/PDF. */
+export function validateProofFile(file: File) {
+  const ext = file.name.split(".").pop()?.toLowerCase() ?? "";
+  if (!PROOF_MIME_TYPES.has(file.type) && !PROOF_EXTENSIONS.has(ext)) {
+    throw new Error("Bukti harus berupa file PNG, JPG, JPEG, atau PDF.");
+  }
+}
+
 /** Unggah bukti ke bucket documents, kembalikan path-nya. */
 export async function uploadDocument(file: File, folder: string): Promise<string> {
+  validateProofFile(file);
   const ext = file.name.split(".").pop()?.toLowerCase() ?? "bin";
   const path = `${folder}/${crypto.randomUUID()}.${ext}`;
   const { error } = await supabase.storage.from("documents").upload(path, file, { upsert: true });
