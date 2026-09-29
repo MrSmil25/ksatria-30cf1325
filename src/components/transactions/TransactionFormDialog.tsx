@@ -2,7 +2,7 @@ import { eventOptionLabel } from "@/lib/events";
 import { useEffect, useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { uploadDocument } from "@/lib/fund-requests";
+import { PROOF_ACCEPT, PROOF_FORMAT_HINT, uploadDocument } from "@/lib/fund-requests";
 import { formatRupiah } from "@/lib/format";
 import {
   VISIBILITIES,
@@ -266,9 +266,10 @@ export function TransactionFormDialog({
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-1.5">
               <Label>Upload Bukti</Label>
+              <p className="text-xs text-muted-foreground">{PROOF_FORMAT_HINT}</p>
               <Input
                 type="file"
-                accept="image/*,application/pdf"
+                accept={PROOF_ACCEPT}
                 onChange={(e) => setFile(e.target.files?.[0] ?? null)}
               />
               {proofPath && !file && <p className="text-xs text-muted-foreground">Bukti sudah terunggah</p>}

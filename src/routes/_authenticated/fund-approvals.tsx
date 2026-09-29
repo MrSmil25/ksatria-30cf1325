@@ -21,6 +21,8 @@ import {
   uploadDocument,
   canApproveFunds,
   kindMeta,
+  PROOF_ACCEPT,
+  PROOF_FORMAT_HINT,
   STATUS_CLASS,
   STATUS_LABEL,
   type FundRequest,
@@ -283,7 +285,7 @@ function ReviewCard({
                     : "Unggah Bukti Transfer (opsional)"}
                 <input
                   type="file"
-                  accept="image/*,application/pdf"
+                  accept={PROOF_ACCEPT}
                   className="hidden"
                   onChange={(e) => handleProof(e.target.files?.[0])}
                 />
