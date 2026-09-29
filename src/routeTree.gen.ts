@@ -38,6 +38,7 @@ import { Route as AuthenticatedMembersRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedMentorTasksRouteImport } from './routes/_authenticated/mentor-tasks'
 import { Route as AuthenticatedMousRouteImport } from './routes/_authenticated/mous'
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
+import { Route as AuthenticatedPicketRouteImport } from './routes/_authenticated/picket'
 import { Route as AuthenticatedPipelineRouteImport } from './routes/_authenticated/pipeline'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedResourcesRouteImport } from './routes/_authenticated/resources'
@@ -234,6 +235,11 @@ const AuthenticatedNotificationsRoute =
     path: '/notifications',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedPicketRoute = AuthenticatedPicketRouteImport.update({
+  id: '/picket',
+  path: '/picket',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedPipelineRoute = AuthenticatedPipelineRouteImport.update({
   id: '/pipeline',
   path: '/pipeline',
@@ -478,6 +484,7 @@ export interface FileRoutesByFullPath {
   '/mentor-tasks': typeof AuthenticatedMentorTasksRoute
   '/mous': typeof AuthenticatedMousRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
+  '/picket': typeof AuthenticatedPicketRoute
   '/pipeline': typeof AuthenticatedPipelineRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/resources': typeof AuthenticatedResourcesRouteWithChildren
@@ -545,6 +552,7 @@ export interface FileRoutesByTo {
   '/mentor-tasks': typeof AuthenticatedMentorTasksRoute
   '/mous': typeof AuthenticatedMousRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
+  '/picket': typeof AuthenticatedPicketRoute
   '/pipeline': typeof AuthenticatedPipelineRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/transactions': typeof AuthenticatedTransactionsRoute
@@ -613,6 +621,7 @@ export interface FileRoutesById {
   '/_authenticated/mentor-tasks': typeof AuthenticatedMentorTasksRoute
   '/_authenticated/mous': typeof AuthenticatedMousRoute
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
+  '/_authenticated/picket': typeof AuthenticatedPicketRoute
   '/_authenticated/pipeline': typeof AuthenticatedPipelineRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/_authenticated/resources': typeof AuthenticatedResourcesRouteWithChildren
@@ -682,6 +691,7 @@ export interface FileRouteTypes {
     | '/mentor-tasks'
     | '/mous'
     | '/notifications'
+    | '/picket'
     | '/pipeline'
     | '/profile'
     | '/resources'
@@ -749,6 +759,7 @@ export interface FileRouteTypes {
     | '/mentor-tasks'
     | '/mous'
     | '/notifications'
+    | '/picket'
     | '/pipeline'
     | '/profile'
     | '/transactions'
@@ -816,6 +827,7 @@ export interface FileRouteTypes {
     | '/_authenticated/mentor-tasks'
     | '/_authenticated/mous'
     | '/_authenticated/notifications'
+    | '/_authenticated/picket'
     | '/_authenticated/pipeline'
     | '/_authenticated/profile'
     | '/_authenticated/resources'
@@ -1067,6 +1079,13 @@ declare module '@tanstack/react-router' {
       path: '/notifications'
       fullPath: '/notifications'
       preLoaderRoute: typeof AuthenticatedNotificationsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/picket': {
+      id: '/_authenticated/picket'
+      path: '/picket'
+      fullPath: '/picket'
+      preLoaderRoute: typeof AuthenticatedPicketRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/pipeline': {
@@ -1371,6 +1390,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedMentorTasksRoute: typeof AuthenticatedMentorTasksRoute
   AuthenticatedMousRoute: typeof AuthenticatedMousRoute
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
+  AuthenticatedPicketRoute: typeof AuthenticatedPicketRoute
   AuthenticatedPipelineRoute: typeof AuthenticatedPipelineRoute
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
   AuthenticatedResourcesRoute: typeof AuthenticatedResourcesRouteWithChildren
@@ -1432,6 +1452,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedMentorTasksRoute: AuthenticatedMentorTasksRoute,
   AuthenticatedMousRoute: AuthenticatedMousRoute,
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
+  AuthenticatedPicketRoute: AuthenticatedPicketRoute,
   AuthenticatedPipelineRoute: AuthenticatedPipelineRoute,
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
   AuthenticatedResourcesRoute: AuthenticatedResourcesRouteWithChildren,
