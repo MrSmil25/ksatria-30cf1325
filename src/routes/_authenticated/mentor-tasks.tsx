@@ -154,6 +154,23 @@ function DetailDialog({
 
   const due = dueMeta(item?.due_date ?? null);
 
+  const MAX_WORDS = 5000;
+  const wordCount = content.trim() ? content.trim().split(/\s+/).length : 0;
+  const overLimit = wordCount > MAX_WORDS;
+  const emptyAnswer =
+    (item?.allow_text ? !content.trim() : true) && !file && !submission?.file_url;
+
+  function onPickFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const picked = e.target.files?.[0] ?? null;
+    if (picked && !["image/png", "image/jpeg"].includes(picked.type)) {
+      toast.error("Lampiran harus berupa gambar PNG atau JPG.");
+      e.target.value = "";
+      setFile(null);
+      return;
+    }
+    setFile(picked);
+  }
+
   return (
     <Dialog open={!!item} onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-lg">
@@ -196,8 +213,16 @@ function DetailDialog({
                   rows={6}
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
-                  placeholder="Tulis jawaban di sini…"
+                  placeholder="Tulis jawaban di sini… Kamu bisa menyertakan link (https://…) di dalam jawaban."
                 />
+                <p
+                  className={`text-right text-xs ${
+                    overLimit ? "font-semibold text-destructive" : "text-muted-foreground"
+                  }`}
+                >
+                  {wordCount}/{MAX_WORDS} kata
+                  {overLimit ? " — melebihi batas" : ""}
+                </p>
               </div>
             )}
 
@@ -214,7 +239,14 @@ function DetailDialog({
                     <Paperclip className="size-4" /> Lihat lampiran yang sudah dikirim
                   </a>
                 )}
-                <Input type="file" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
+                <Input
+                  type="file"
+                  accept="image/png,image/jpeg,.png,.jpg,.jpeg"
+                  onChange={onPickFile}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Format yang didukung: PNG atau JPG.
+                </p>
               </div>
             )}
 
@@ -226,7 +258,7 @@ function DetailDialog({
             <Button
               className="w-full"
               onClick={() => submit.mutate()}
-              disabled={submit.isPending}
+              disabled={submit.isPending || overLimit || emptyAnswer}
             >
               {submit.isPending
                 ? "Menyimpan…"
