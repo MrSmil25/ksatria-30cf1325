@@ -289,6 +289,7 @@ function ReviewCard({
                   className="hidden"
                   onChange={(e) => handleProof(e.target.files?.[0])}
                 />
+                <p className="w-full text-xs text-muted-foreground">{PROOF_FORMAT_HINT}</p>
               </label>
             </Button>
             <Button size="sm" disabled={busy || uploading} onClick={() => onDisburse(proofPath)}>
