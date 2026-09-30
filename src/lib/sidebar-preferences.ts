@@ -1,18 +1,6 @@
 export const MAX_SIDEBAR_SHORTCUTS = 11;
 
-const DEFAULT_SHORTCUTS = [
-  "/dashboard",
-  "/workspace",
-  "/calendar",
-  "/letters",
-  "/members",
-  "/finance-summary",
-  "/cash",
-  "/events",
-  "/command-center",
-  "/content-calendar",
-  "/divisions",
-];
+const DEFAULT_SHORTCUTS = ["/dashboard", "/mentor-tasks", "/cash", "/workspace"];
 
 export type SidebarPreferenceItem = { to: string; label: string };
 
@@ -26,7 +14,7 @@ export type SidebarPreferences = {
 type StoredPreferences = Pick<SidebarPreferences, "version" | "pins" | "visits">;
 
 export function sidebarStorageKey(accountId: string) {
-  return `myroom:sidebar:v1:${encodeURIComponent(accountId)}`;
+  return `myroom:sidebar:v2:${encodeURIComponent(accountId)}`;
 }
 
 export function normalizeSidebarPreferences(
