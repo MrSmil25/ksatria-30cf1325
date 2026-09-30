@@ -26,6 +26,7 @@ import {
   PiggyBank,
   GraduationCap,
   ClipboardList,
+  ClipboardCheck,
   Building2,
   KanbanSquare,
   FileSignature,
