@@ -57,9 +57,15 @@ export const Route = createFileRoute("/_authenticated/picket")({
   head: () => ({
     meta: [
       { title: "Piket Mingguan — My Room" },
-      { name: "description", content: "Ambil piket mingguan, kumpulkan bukti before-after, dan kelola denda piket." },
+      {
+        name: "description",
+        content: "Ambil piket mingguan, kumpulkan bukti before-after, dan kelola denda piket.",
+      },
       { property: "og:title", content: "Piket Mingguan — My Room" },
-      { property: "og:description", content: "Ambil piket mingguan, kumpulkan bukti before-after, dan kelola denda piket." },
+      {
+        property: "og:description",
+        content: "Ambil piket mingguan, kumpulkan bukti before-after, dan kelola denda piket.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
@@ -76,7 +82,13 @@ const STATUS_VARIANT: Record<PicketSignup["status"], string> = {
 
 const rupiah = (n: number) => "Rp " + n.toLocaleString("id-ID");
 const fmtDeadline = (s: string) =>
-  new Date(s).toLocaleString("id-ID", { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+  new Date(s).toLocaleString("id-ID", {
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 const fmtWeek = (w: string) => {
   const [y = 1970, m = 1, d = 1] = w.split("-").map(Number);
   const a = new Date(y, m - 1, d);
@@ -96,9 +108,15 @@ function PicketPage() {
   const [proofFor, setProofFor] = useState<PicketSignup | null>(null);
 
   const isKetua = me?.role === "Ketua";
-  const { data: isManager = false } = useQuery({ queryKey: ["picket-is-manager"], queryFn: fetchIsPicketManager });
+  const { data: isManager = false } = useQuery({
+    queryKey: ["picket-is-manager"],
+    queryFn: fetchIsPicketManager,
+  });
   const weekQ = useQuery({ queryKey: ["picket-week", week], queryFn: () => fetchPicketWeek(week) });
-  const finesQ = useQuery({ queryKey: ["picket-fines", week], queryFn: () => fetchPicketFines(week) });
+  const finesQ = useQuery({
+    queryKey: ["picket-fines", week],
+    queryFn: () => fetchPicketFines(week),
+  });
 
   const nameOf = useMemo(() => {
     const map = new Map(profiles.map((p) => [p.id, p.nickname || p.full_name]));
@@ -123,10 +141,13 @@ function PicketPage() {
     <div className="mx-auto max-w-6xl space-y-6 p-4 md:p-6">
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Kebersamaan</p>
+          <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+            Kebersamaan
+          </p>
           <h1 className="font-display text-3xl font-bold tracking-tight">Piket Mingguan</h1>
           <p className="mt-1 max-w-xl text-sm text-muted-foreground">
-            Pilih piket yang tersedia, kerjakan, lalu kumpulkan foto before &amp; after sebelum deadline.
+            Pilih piket yang tersedia, kerjakan, lalu kumpulkan foto before &amp; after sebelum
+            deadline.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -144,18 +165,31 @@ function PicketPage() {
       </header>
 
       <div className="flex items-center justify-between rounded-2xl border bg-card/70 p-2 backdrop-blur">
-        <Button variant="ghost" size="icon" aria-label="Minggu sebelumnya" onClick={() => setWeek(shiftWeek(week, -1))}>
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-label="Minggu sebelumnya"
+          onClick={() => setWeek(shiftWeek(week, -1))}
+        >
           <ChevronLeft className="h-4 w-4" />
         </Button>
         <div className="text-center">
           <p className="text-sm font-semibold">{fmtWeek(week)}</p>
           {week !== weekStartOf(new Date()) && (
-            <button className="text-xs text-primary hover:underline" onClick={() => setWeek(weekStartOf(new Date()))}>
+            <button
+              className="text-xs text-primary hover:underline"
+              onClick={() => setWeek(weekStartOf(new Date()))}
+            >
               Kembali ke minggu ini
             </button>
           )}
         </div>
-        <Button variant="ghost" size="icon" aria-label="Minggu berikutnya" onClick={() => setWeek(shiftWeek(week, 1))}>
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-label="Minggu berikutnya"
+          onClick={() => setWeek(shiftWeek(week, 1))}
+        >
           <ChevronRight className="h-4 w-4" />
         </Button>
       </div>
@@ -175,7 +209,13 @@ function PicketPage() {
               <Skeleton className="h-40" />
             </div>
           ) : tasks.length === 0 ? (
-            <EmptyState text={isManager ? "Belum ada piket minggu ini. Tambahkan jenis piket pertama." : "Belum ada piket untuk minggu ini."} />
+            <EmptyState
+              text={
+                isManager
+                  ? "Belum ada piket minggu ini. Tambahkan jenis piket pertama."
+                  : "Belum ada piket untuk minggu ini."
+              }
+            />
           ) : (
             <div className="grid gap-4 md:grid-cols-2">
               {tasks.map((t) => (
@@ -189,11 +229,17 @@ function PicketPage() {
                   nameOf={nameOf}
                   now={now}
                   busy={act.isPending}
-                  onTake={() => me && act.mutate(() => takePicket(t.id, me.id), { onSuccess: () => toast.success("Piket diambil") })}
+                  onTake={() =>
+                    me &&
+                    act.mutate(() => takePicket(t.id, me.id), {
+                      onSuccess: () => toast.success("Piket diambil"),
+                    })
+                  }
                   onCancel={(id) => act.mutate(() => cancelPicket(id))}
                   onSubmit={(s) => setProofFor(s)}
                   onDelete={() => {
-                    if (confirm(`Hapus piket "${t.title}"?`)) act.mutate(() => deletePicketTask(t.id));
+                    if (confirm(`Hapus piket "${t.title}"?`))
+                      act.mutate(() => deletePicketTask(t.id));
                   }}
                 />
               ))}
@@ -205,10 +251,16 @@ function PicketPage() {
           <TabsContent value="review" className="mt-4">
             <ReviewList
               tasks={tasks}
-              signups={signups.filter((s) => s.status === "Dikumpulkan" || s.status === "Disetujui" || s.status === "Ditolak")}
+              signups={signups.filter(
+                (s) =>
+                  s.status === "Dikumpulkan" || s.status === "Disetujui" || s.status === "Ditolak",
+              )}
               nameOf={nameOf}
               onReview={(s, status, note) =>
-                me && act.mutate(() => reviewPicket(s.id, me.id, status, note), { onSuccess: () => toast.success(`Bukti ${status.toLowerCase()}`) })
+                me &&
+                act.mutate(() => reviewPicket(s.id, me.id, status, note), {
+                  onSuccess: () => toast.success(`Bukti ${status.toLowerCase()}`),
+                })
               }
             />
           </TabsContent>
@@ -225,9 +277,15 @@ function PicketPage() {
               nameOf={nameOf}
               now={now}
               onGive={(member, amount, reason) =>
-                act.mutate(() => givePicketFine(member, week, amount, reason), { onSuccess: () => toast.success("Denda dicatat dan masuk ke Kas") })
+                act.mutate(() => givePicketFine(member, week, amount, reason), {
+                  onSuccess: () => toast.success("Denda dicatat dan masuk ke Kas"),
+                })
               }
-              onCancel={(id) => act.mutate(() => cancelPicketFine(id), { onSuccess: () => toast.success("Denda dibatalkan") })}
+              onCancel={(id) =>
+                act.mutate(() => cancelPicketFine(id), {
+                  onSuccess: () => toast.success("Denda dibatalkan"),
+                })
+              }
             />
           </TabsContent>
         )}
@@ -238,15 +296,24 @@ function PicketPage() {
               <EmptyState text="Tidak ada denda piket untuk minggu ini." />
             ) : (
               <div className="space-y-2">
-                {(finesQ.data ?? []).filter((f) => f.status === "Didenda").map((f) => (
-                  <div key={f.id} className="flex items-center justify-between rounded-xl border bg-card p-4">
-                    <div>
-                      <p className="font-semibold">{rupiah(f.amount)}</p>
-                      <p className="text-sm text-muted-foreground">{f.reason || "Belum piket hingga deadline"}</p>
+                {(finesQ.data ?? [])
+                  .filter((f) => f.status === "Didenda")
+                  .map((f) => (
+                    <div
+                      key={f.id}
+                      className="flex items-center justify-between rounded-xl border bg-card p-4"
+                    >
+                      <div>
+                        <p className="font-semibold">{rupiah(f.amount)}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {f.reason || "Belum piket hingga deadline"}
+                        </p>
+                      </div>
+                      <a href="/cash" className="text-sm font-medium text-primary hover:underline">
+                        Bayar di Kas →
+                      </a>
                     </div>
-                    <a href="/cash" className="text-sm font-medium text-primary hover:underline">Bayar di Kas →</a>
-                  </div>
-                ))}
+                  ))}
               </div>
             )}
           </TabsContent>
@@ -270,7 +337,12 @@ function PicketPage() {
         />
       )}
       {isKetua && me && (
-        <ManagersDialog open={managersOpen} onOpenChange={setManagersOpen} meId={me.id} profiles={profiles.filter((p) => p.status === "Active")} />
+        <ManagersDialog
+          open={managersOpen}
+          onOpenChange={setManagersOpen}
+          meId={me.id}
+          profiles={profiles.filter((p) => p.status === "Active")}
+        />
       )}
       <ProofDialog signup={proofFor} onClose={() => setProofFor(null)} onDone={refresh} />
     </div>
@@ -311,7 +383,11 @@ function TaskCard(props: {
       <div className="flex items-start justify-between gap-3">
         <div>
           <h3 className="font-display text-lg font-semibold">{t.title}</h3>
-          {t.description && <p className="mt-1 whitespace-pre-line text-sm text-muted-foreground">{t.description}</p>}
+          {t.description && (
+            <p className="mt-1 whitespace-pre-line text-sm text-muted-foreground">
+              {t.description}
+            </p>
+          )}
         </div>
         {isManager && (
           <Button variant="ghost" size="icon" aria-label="Hapus piket" onClick={props.onDelete}>
@@ -331,7 +407,10 @@ function TaskCard(props: {
       {signups.length > 0 && (
         <ul className="flex flex-wrap gap-2">
           {signups.map((s) => (
-            <li key={s.id} className={`rounded-full px-2.5 py-1 text-xs font-medium ${STATUS_VARIANT[s.status]}`}>
+            <li
+              key={s.id}
+              className={`rounded-full px-2.5 py-1 text-xs font-medium ${STATUS_VARIANT[s.status]}`}
+            >
               {nameOf(s.member_id)} · {s.status}
             </li>
           ))}
@@ -347,18 +426,29 @@ function TaskCard(props: {
               </Button>
             )}
             {mine.status === "Diambil" && !passed && (
-              <Button size="sm" variant="outline" disabled={props.busy} onClick={() => props.onCancel(mine.id)}>
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={props.busy}
+                onClick={() => props.onCancel(mine.id)}
+              >
                 Batal ambil
               </Button>
             )}
-            {mine.review_note && <p className="w-full text-xs text-muted-foreground">Catatan pengelola: {mine.review_note}</p>}
+            {mine.review_note && (
+              <p className="w-full text-xs text-muted-foreground">
+                Catatan pengelola: {mine.review_note}
+              </p>
+            )}
           </>
         ) : passed ? (
           <span className="text-xs text-muted-foreground">Pendaftaran ditutup</span>
         ) : full ? (
           <Badge variant="secondary">Kuota penuh</Badge>
         ) : props.mySignupThisWeek ? (
-          <span className="text-xs text-muted-foreground">Kamu sudah mengambil piket lain minggu ini</span>
+          <span className="text-xs text-muted-foreground">
+            Kamu sudah mengambil piket lain minggu ini
+          </span>
         ) : (
           <Button size="sm" disabled={props.busy} onClick={props.onTake}>
             Ambil piket ini
@@ -375,22 +465,35 @@ function ReviewList(props: {
   nameOf: (id: string) => string;
   onReview: (s: PicketSignup, status: "Disetujui" | "Ditolak", note: string | null) => void;
 }) {
-  if (props.signups.length === 0) return <EmptyState text="Belum ada bukti piket yang dikumpulkan minggu ini." />;
+  if (props.signups.length === 0)
+    return <EmptyState text="Belum ada bukti piket yang dikumpulkan minggu ini." />;
   const title = (id: string) => props.tasks.find((t) => t.id === id)?.title ?? "Piket";
   return (
     <div className="space-y-3">
       {props.signups.map((s) => (
-        <div key={s.id} className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border bg-card p-4">
+        <div
+          key={s.id}
+          className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border bg-card p-4"
+        >
           <div>
             <p className="font-semibold">
-              {props.nameOf(s.member_id)} <span className="font-normal text-muted-foreground">· {title(s.task_id)}</span>
+              {props.nameOf(s.member_id)}{" "}
+              <span className="font-normal text-muted-foreground">· {title(s.task_id)}</span>
             </p>
             {s.note && <p className="text-sm text-muted-foreground">{s.note}</p>}
-            <span className={`mt-1 inline-block rounded-full px-2 py-0.5 text-xs ${STATUS_VARIANT[s.status]}`}>{s.status}</span>
+            <span
+              className={`mt-1 inline-block rounded-full px-2 py-0.5 text-xs ${STATUS_VARIANT[s.status]}`}
+            >
+              {s.status}
+            </span>
           </div>
           <div className="flex flex-wrap gap-2">
-            <Button size="sm" variant="outline" onClick={() => openPicketProof(s.before_url)}>Before</Button>
-            <Button size="sm" variant="outline" onClick={() => openPicketProof(s.after_url)}>After</Button>
+            <Button size="sm" variant="outline" onClick={() => openPicketProof(s.before_url)}>
+              Before
+            </Button>
+            <Button size="sm" variant="outline" onClick={() => openPicketProof(s.after_url)}>
+              After
+            </Button>
             {s.status !== "Disetujui" && (
               <Button size="sm" onClick={() => props.onReview(s, "Disetujui", null)}>
                 <ShieldCheck className="mr-1 h-4 w-4" /> Setujui
@@ -430,19 +533,24 @@ function FinesPanel(props: {
   const lastDeadline = props.tasks.reduce((m, t) => Math.max(m, new Date(t.deadline).getTime()), 0);
   const allPassed = props.tasks.length > 0 && props.now > lastDeadline;
   const done = new Set(
-    props.signups.filter((s) => s.status === "Disetujui" || s.status === "Dikumpulkan").map((s) => s.member_id),
+    props.signups
+      .filter((s) => s.status === "Disetujui" || s.status === "Dikumpulkan")
+      .map((s) => s.member_id),
   );
-  const activeFine = new Map(props.fines.filter((f) => f.status === "Didenda").map((f) => [f.member_id, f]));
+  const activeFine = new Map(
+    props.fines.filter((f) => f.status === "Didenda").map((f) => [f.member_id, f]),
+  );
   const missing = props.profiles.filter((p) => !done.has(p.id));
 
-  if (props.tasks.length === 0) return <EmptyState text="Belum ada piket minggu ini, jadi belum ada yang perlu didenda." />;
+  if (props.tasks.length === 0)
+    return <EmptyState text="Belum ada piket minggu ini, jadi belum ada yang perlu didenda." />;
   return (
     <div className="space-y-4">
       <p className="rounded-xl bg-muted/60 p-3 text-sm text-muted-foreground">
         {allPassed
           ? "Semua deadline minggu ini sudah lewat. Anggota di bawah belum mengumpulkan bukti piket — kamu bisa memberi denda atau membiarkannya."
-          : "Deadline minggu ini belum semua lewat. Daftar ini masih bisa berubah; denda sebaiknya diberikan setelah deadline."}
-        {" "}Denda otomatis muncul sebagai tagihan di halaman Kas anggota.
+          : "Deadline minggu ini belum semua lewat. Daftar ini masih bisa berubah; denda sebaiknya diberikan setelah deadline."}{" "}
+        Denda otomatis muncul sebagai tagihan di halaman Kas anggota.
       </p>
       {missing.length === 0 ? (
         <EmptyState text="Semua anggota sudah piket minggu ini." />
@@ -462,7 +570,9 @@ function FinesPanel(props: {
                 {fine ? (
                   <div className="flex items-center gap-2">
                     <Badge variant="destructive">Didenda {rupiah(fine.amount)}</Badge>
-                    <Button size="sm" variant="outline" onClick={() => props.onCancel(fine.id)}>Batalkan denda</Button>
+                    <Button size="sm" variant="outline" onClick={() => props.onCancel(fine.id)}>
+                      Batalkan denda
+                    </Button>
                   </div>
                 ) : (
                   <div className="flex items-center gap-2">
@@ -478,7 +588,13 @@ function FinesPanel(props: {
                       size="sm"
                       variant="destructive"
                       disabled={!Number(amounts[p.id])}
-                      onClick={() => props.onGive(p.id, Number(amounts[p.id]), "Belum melaksanakan piket hingga deadline")}
+                      onClick={() =>
+                        props.onGive(
+                          p.id,
+                          Number(amounts[p.id]),
+                          "Belum melaksanakan piket hingga deadline",
+                        )
+                      }
                     >
                       Denda
                     </Button>
@@ -491,7 +607,11 @@ function FinesPanel(props: {
       )}
       {props.fines.some((f) => f.status === "Dibatalkan") && (
         <p className="text-xs text-muted-foreground">
-          Denda dibatalkan minggu ini: {props.fines.filter((f) => f.status === "Dibatalkan").map((f) => props.nameOf(f.member_id)).join(", ")}
+          Denda dibatalkan minggu ini:{" "}
+          {props.fines
+            .filter((f) => f.status === "Dibatalkan")
+            .map((f) => props.nameOf(f.member_id))
+            .join(", ")}
         </p>
       )}
     </div>
@@ -503,7 +623,13 @@ function CreateTaskDialog(props: {
   onOpenChange: (v: boolean) => void;
   week: string;
   busy: boolean;
-  onCreate: (input: { title: string; description: string | null; week_start: string; deadline: string; quota: number }) => void;
+  onCreate: (input: {
+    title: string;
+    description: string | null;
+    week_start: string;
+    deadline: string;
+    quota: number;
+  }) => void;
 }) {
   const [title, setTitle] = useState("");
   const [desc, setDesc] = useState("");
@@ -520,20 +646,41 @@ function CreateTaskDialog(props: {
         <div className="space-y-3">
           <div className="space-y-1.5">
             <Label htmlFor="pk-title">Jenis piket</Label>
-            <Input id="pk-title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Contoh: Menyapu ruang sekretariat" />
+            <Input
+              id="pk-title"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="Contoh: Menyapu ruang sekretariat"
+            />
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="pk-desc">Yang perlu dilakukan</Label>
-            <Textarea id="pk-desc" value={desc} onChange={(e) => setDesc(e.target.value)} rows={3} />
+            <Textarea
+              id="pk-desc"
+              value={desc}
+              onChange={(e) => setDesc(e.target.value)}
+              rows={3}
+            />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label htmlFor="pk-deadline">Deadline</Label>
-              <Input id="pk-deadline" type="datetime-local" value={deadline} onChange={(e) => setDeadline(e.target.value)} />
+              <Input
+                id="pk-deadline"
+                type="datetime-local"
+                value={deadline}
+                onChange={(e) => setDeadline(e.target.value)}
+              />
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="pk-quota">Kuota orang</Label>
-              <Input id="pk-quota" type="number" min={1} value={quota} onChange={(e) => setQuota(e.target.value)} />
+              <Input
+                id="pk-quota"
+                type="number"
+                min={1}
+                value={quota}
+                onChange={(e) => setQuota(e.target.value)}
+              />
             </div>
           </div>
         </div>
@@ -568,7 +715,11 @@ function ManagersDialog(props: {
   profiles: { id: string; full_name: string; nickname: string | null; role: string }[];
 }) {
   const qc = useQueryClient();
-  const { data: managers = [] } = useQuery({ queryKey: ["picket-managers"], queryFn: fetchPicketManagers, enabled: props.open });
+  const { data: managers = [] } = useQuery({
+    queryKey: ["picket-managers"],
+    queryFn: fetchPicketManagers,
+    enabled: props.open,
+  });
   const [pick, setPick] = useState("");
   const m = useMutation({
     mutationFn: (fn: () => Promise<void>) => fn(),
@@ -581,7 +732,10 @@ function ManagersDialog(props: {
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Pengelola piket</DialogTitle>
-          <DialogDescription>Pengelola bisa menambah jenis piket, memeriksa bukti, dan memberi atau membatalkan denda.</DialogDescription>
+          <DialogDescription>
+            Pengelola bisa menambah jenis piket, memeriksa bukti, dan memberi atau membatalkan
+            denda.
+          </DialogDescription>
         </DialogHeader>
         <div className="flex gap-2">
           <select
@@ -591,19 +745,34 @@ function ManagersDialog(props: {
           >
             <option value="">Pilih anggota…</option>
             {candidates.map((p) => (
-              <option key={p.id} value={p.id}>{p.full_name}</option>
+              <option key={p.id} value={p.id}>
+                {p.full_name}
+              </option>
             ))}
           </select>
-          <Button disabled={!pick || m.isPending} onClick={() => m.mutate(() => addPicketManager(pick, props.meId), { onSuccess: () => setPick("") })}>
+          <Button
+            disabled={!pick || m.isPending}
+            onClick={() =>
+              m.mutate(() => addPicketManager(pick, props.meId), { onSuccess: () => setPick("") })
+            }
+          >
             Tambah
           </Button>
         </div>
         <ul className="divide-y rounded-xl border">
-          {managers.length === 0 && <li className="p-3 text-sm text-muted-foreground">Belum ada pengelola selain Ketua.</li>}
+          {managers.length === 0 && (
+            <li className="p-3 text-sm text-muted-foreground">Belum ada pengelola selain Ketua.</li>
+          )}
           {managers.map((id) => (
             <li key={id} className="flex items-center justify-between p-3 text-sm">
               {props.profiles.find((p) => p.id === id)?.full_name ?? "Anggota"}
-              <Button size="sm" variant="ghost" onClick={() => m.mutate(() => removePicketManager(id))}>Hapus</Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => m.mutate(() => removePicketManager(id))}
+              >
+                Hapus
+              </Button>
             </li>
           ))}
         </ul>
@@ -612,7 +781,11 @@ function ManagersDialog(props: {
   );
 }
 
-function ProofDialog(props: { signup: PicketSignup | null; onClose: () => void; onDone: () => void }) {
+function ProofDialog(props: {
+  signup: PicketSignup | null;
+  onClose: () => void;
+  onDone: () => void;
+}) {
   const [before, setBefore] = useState<File | null>(null);
   const [after, setAfter] = useState<File | null>(null);
   const [note, setNote] = useState("");
@@ -646,7 +819,12 @@ function ProofDialog(props: { signup: PicketSignup | null; onClose: () => void; 
         <div className="space-y-3">
           <div className="space-y-1.5">
             <Label htmlFor="pk-before">Foto before</Label>
-            <Input id="pk-before" type="file" accept={PROOF_ACCEPT} onChange={pickFile(setBefore)} />
+            <Input
+              id="pk-before"
+              type="file"
+              accept={PROOF_ACCEPT}
+              onChange={pickFile(setBefore)}
+            />
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="pk-after">Foto after</Label>
@@ -654,7 +832,12 @@ function ProofDialog(props: { signup: PicketSignup | null; onClose: () => void; 
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="pk-note">Catatan (opsional)</Label>
-            <Textarea id="pk-note" rows={2} value={note} onChange={(e) => setNote(e.target.value)} />
+            <Textarea
+              id="pk-note"
+              rows={2}
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+            />
           </div>
         </div>
         <DialogFooter>
