@@ -364,7 +364,7 @@ function TaskCard(props: {
   task: PicketTask;
   signups: PicketSignup[];
   myId?: string;
-  mySignupThisWeek?: PicketSignup;
+  mySignupThisWeek?: PicketSignup | undefined;
   isManager: boolean;
   nameOf: (id: string) => string;
   now: number;
