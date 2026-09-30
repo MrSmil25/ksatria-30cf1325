@@ -106,6 +106,7 @@ const navSections: NavSection[] = [
       { to: "/help-requests", label: "Request Bantuan", icon: LifeBuoy },
       { to: "/calendar", label: "Kalender", icon: CalendarDays },
       { to: "/mentor-tasks", label: "Tugas dari Pembina", icon: GraduationCap },
+      { to: "/picket", label: "Piket", icon: ClipboardCheck },
     ],
   },
   {
