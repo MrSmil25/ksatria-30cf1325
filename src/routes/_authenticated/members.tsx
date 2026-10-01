@@ -64,6 +64,23 @@ function MembersPage() {
   const [saving, setSaving] = useState(false);
 
   const canEdit = isBPH(me?.role);
+  const isKetua = me?.role === "Ketua";
+  const [removing, setRemoving] = useState<Profile | null>(null);
+  const [removingBusy, setRemovingBusy] = useState(false);
+
+  async function confirmRemove() {
+    if (!removing) return;
+    setRemovingBusy(true);
+    const { error } = await supabase.rpc("remove_member" as never, { p_member: removing.id } as never);
+    setRemovingBusy(false);
+    if (error) {
+      toast.error("Gagal mengeluarkan: " + error.message);
+      return;
+    }
+    await queryClient.invalidateQueries();
+    toast.success(`${removing.full_name} telah dikeluarkan`);
+    setRemoving(null);
+  }
 
   const filtered = useMemo(
     () =>
@@ -179,9 +196,16 @@ function MembersPage() {
                   </td>
                   {canEdit && (
                     <td className="px-4 py-3 text-right">
-                      <Button variant="outline" size="sm" onClick={() => openEdit(p)}>
-                        Edit
-                      </Button>
+                      <div className="flex justify-end gap-2">
+                        <Button variant="outline" size="sm" onClick={() => openEdit(p)}>
+                          Edit
+                        </Button>
+                        {isKetua && p.id !== me?.id && p.status !== "Inactive" && (
+                          <Button variant="destructive" size="sm" onClick={() => setRemoving(p)}>
+                            Keluarkan
+                          </Button>
+                        )}
+                      </div>
                     </td>
                   )}
                 </tr>
@@ -252,6 +276,27 @@ function MembersPage() {
             </Button>
             <Button onClick={saveEdit} disabled={saving}>
               {saving ? "Menyimpan…" : "Simpan"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!removing} onOpenChange={(o) => !o && setRemoving(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Keluarkan anggota?</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">
+            <strong className="text-foreground">{removing?.full_name}</strong> akan langsung
+            keluar dari aplikasi dan tidak bisa masuk lagi. Riwayat kerjanya tetap tersimpan.
+            Ia hanya bisa kembali menjadi anggota dengan mendaftar ulang memakai undangan baru.
+          </p>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setRemoving(null)}>
+              Batal
+            </Button>
+            <Button variant="destructive" onClick={confirmRemove} disabled={removingBusy}>
+              {removingBusy ? "Memproses…" : "Keluarkan"}
             </Button>
           </DialogFooter>
         </DialogContent>

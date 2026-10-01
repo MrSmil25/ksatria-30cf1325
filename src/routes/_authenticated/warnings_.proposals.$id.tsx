@@ -42,7 +42,7 @@ export const Route = createFileRoute("/_authenticated/warnings_/proposals/$id")(
   component: ProposalDetailPage,
   errorComponent: ({ error }) => (
     <p role="alert" className="p-6 text-sm text-red-700">
-      {error.message}
+      {error instanceof Error ? error.message : String(error)}
     </p>
   ),
   notFoundComponent: () => <p className="p-6 text-sm">Usulan tidak ditemukan.</p>,
