@@ -7536,6 +7536,10 @@ export type Database = {
       }
       cancel_picket_fine: { Args: { p_fine: string }; Returns: undefined }
       claim_invite: { Args: { p_code: string }; Returns: string }
+      cleanup_inactive_member: {
+        Args: { p_member: string }
+        Returns: undefined
+      }
       close_expired_proposals: { Args: never; Returns: undefined }
       compute_relationship_level: {
         Args: {

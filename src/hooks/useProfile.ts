@@ -30,6 +30,7 @@ export function useProfiles() {
       const { data, error } = await supabase
         .from("profiles")
         .select("*")
+        .neq("status", "Inactive")
         .order("full_name", { ascending: true });
       if (error) throw error;
       return data ?? [];
