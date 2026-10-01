@@ -7691,6 +7691,7 @@ export type Database = {
       remind_content_and_design: { Args: never; Returns: undefined }
       remind_stakeholder_actions: { Args: never; Returns: undefined }
       remind_stale_tasks: { Args: never; Returns: undefined }
+      remove_member: { Args: { p_member: string }; Returns: undefined }
       restore_record: {
         Args: { p_record_id: string; p_table: string }
         Returns: string
