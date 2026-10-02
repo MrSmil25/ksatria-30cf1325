@@ -987,8 +987,17 @@
 
 .workspace-menu-dialog {
   overflow: hidden;
+  width: calc(100vw - 1.5rem);
+  max-width: min(48rem, calc(100vw - 1.5rem));
+  max-height: calc(100dvh - 1.5rem - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr);
   border-color: var(--dash-line-strong);
   background: var(--popover);
+}
+
+.workspace-menu-dialog [data-slot="tabs-content"] {
+  -webkit-overflow-scrolling: touch;
 }
 
 .workspace-menu-link,
