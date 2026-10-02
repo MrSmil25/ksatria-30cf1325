@@ -997,14 +997,6 @@
 }
 
 
-@media (max-width: 639px) {
-  .workspace-menu-dialog .workspace-shortcut-option:has(button[aria-label^="Naikkan"]) {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    gap: 0.25rem;
-  }
-}
-
 .workspace-menu-dialog [role="tabpanel"] {
   -webkit-overflow-scrolling: touch;
 }
