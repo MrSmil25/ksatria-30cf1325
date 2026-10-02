@@ -179,8 +179,8 @@ export function WorkspaceNavigation({
               Buka modul yang tersedia untuk akunmu atau atur pintasan.
             </DialogDescription>
           </DialogHeader>
-          <Tabs defaultValue="menu" className="min-h-0">
-            <div className="border-b px-5 pt-4">
+          <Tabs defaultValue="menu" className="flex min-h-0 min-w-0 flex-col overflow-hidden">
+            <div className="shrink-0 border-b px-4 pt-4 sm:px-5">
               <TabsList className="w-full sm:w-auto">
                 <TabsTrigger value="menu" className="flex-1 sm:flex-none">
                   Menu
@@ -190,7 +190,7 @@ export function WorkspaceNavigation({
                 </TabsTrigger>
               </TabsList>
             </div>
-            <TabsContent value="menu" className="m-0 max-h-[min(68vh,680px)] overflow-y-auto p-5">
+            <TabsContent value="menu" className="m-0 min-h-0 min-w-0 flex-1 overflow-y-auto overscroll-contain p-4 sm:p-5">
               <label className="relative block">
                 <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
@@ -263,7 +263,7 @@ export function WorkspaceNavigation({
             </TabsContent>
             <TabsContent
               value="settings"
-              className="m-0 max-h-[min(68vh,680px)] overflow-y-auto p-5"
+              className="m-0 min-h-0 min-w-0 flex-1 overflow-y-auto overscroll-contain p-4 sm:p-5"
             >
               <SidebarCustomizer
                 sections={sections}
@@ -368,36 +368,40 @@ function SidebarCustomizer({
           const item = map.get(path);
           if (!item) return null;
           return (
-            <li key={path} className="workspace-shortcut-option">
-              <span className="w-5 text-center text-xs text-muted-foreground">{index + 1}</span>
-              <item.icon className="size-4" />
-              <span className="min-w-0 flex-1 truncate">{item.label}</span>
-              <Button
-                variant="ghost"
-                size="icon"
-                aria-label={`Naikkan ${item.label}`}
-                disabled={index === 0}
-                onClick={() => store.move(path, -1)}
-              >
-                <ArrowUp />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                aria-label={`Turunkan ${item.label}`}
-                disabled={index === preferences.pins.length - 1}
-                onClick={() => store.move(path, 1)}
-              >
-                <ArrowDown />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                aria-label={`Lepas ${item.label}`}
-                onClick={() => toggle(item)}
-              >
-                <PinOff />
-              </Button>
+            <li key={path} className="workspace-shortcut-option grid grid-cols-[minmax(0,1fr)_auto] gap-y-1 sm:flex">
+              <div className="flex min-w-0 items-center gap-2 sm:flex-1">
+                <span className="w-5 shrink-0 text-center text-xs text-muted-foreground">{index + 1}</span>
+                <item.icon className="size-4 shrink-0" />
+                <span className="min-w-0 flex-1 break-words text-sm">{item.label}</span>
+              </div>
+              <div className="col-span-2 flex shrink-0 justify-end sm:col-span-1">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  aria-label={`Naikkan ${item.label}`}
+                  disabled={index === 0}
+                  onClick={() => store.move(path, -1)}
+                >
+                  <ArrowUp />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  aria-label={`Turunkan ${item.label}`}
+                  disabled={index === preferences.pins.length - 1}
+                  onClick={() => store.move(path, 1)}
+                >
+                  <ArrowDown />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  aria-label={`Lepas ${item.label}`}
+                  onClick={() => toggle(item)}
+                >
+                  <PinOff />
+                </Button>
+              </div>
             </li>
           );
         })}
