@@ -141,11 +141,11 @@ function CashPage() {
       </section>
 
       <Tabs defaultValue="bills">
-        <TabsList className="w-full">
-          <TabsTrigger value="bills">Tagihan Saya</TabsTrigger>
-          {manage && <TabsTrigger value="programs">Kelola Program</TabsTrigger>}
+        <TabsList className="grid h-auto w-full grid-cols-2 gap-1 sm:inline-flex sm:h-9 sm:w-auto">
+          <TabsTrigger className="min-w-0 whitespace-normal py-2 text-center sm:whitespace-nowrap sm:py-1" value="bills">Tagihan Saya</TabsTrigger>
+          {manage && <TabsTrigger className="min-w-0 whitespace-normal py-2 text-center sm:whitespace-nowrap sm:py-1" value="programs">Kelola Program</TabsTrigger>}
           {manage && (
-            <TabsTrigger value="verify">
+            <TabsTrigger className="min-w-0 whitespace-normal py-2 text-center sm:whitespace-nowrap sm:py-1" value="verify">
               Verifikasi
               {pending.length > 0 && (
                 <span className="ml-2 rounded-full bg-destructive px-2 py-0.5 text-[11px] font-semibold text-destructive-foreground">
@@ -154,7 +154,7 @@ function CashPage() {
               )}
             </TabsTrigger>
           )}
-          <TabsTrigger value="expenses">Pengeluaran Kas</TabsTrigger>
+          <TabsTrigger className="min-w-0 whitespace-normal py-2 text-center sm:whitespace-nowrap sm:py-1" value="expenses">Pengeluaran Kas</TabsTrigger>
         </TabsList>
 
         <TabsContent value="bills" className="mt-4">
