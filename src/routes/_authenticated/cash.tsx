@@ -68,6 +68,8 @@ export const Route = createFileRoute("/_authenticated/cash")({
       { name: "description", content: "Kelola kas organisasi, iuran anggota, dan pengeluaran kas." },
       { property: "og:title", content: "Kas & Iuran — OrgTool" },
       { property: "og:description", content: "Kelola kas organisasi, iuran anggota, dan pengeluaran kas." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: CashPage,
@@ -93,18 +95,18 @@ function CashPage() {
 
   return (
     <div className="mx-auto max-w-5xl space-y-6">
-      <section className="rounded-2xl border bg-emerald-50 p-6 shadow-sm">
+      <section className="rounded-2xl border bg-emerald-50 p-4 shadow-sm sm:p-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <span className="flex size-10 items-center justify-center rounded-xl bg-emerald-600/10 text-emerald-700">
+          <div className="flex min-w-0 items-center gap-3">
+            <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-emerald-600/10 text-emerald-700">
               <Wallet className="size-5" />
             </span>
-            <div>
+            <div className="min-w-0">
               <p className="text-sm text-emerald-800/70">Saldo Kas</p>
-              <p className="text-3xl font-bold text-emerald-700">
+              <p className="break-words text-2xl font-bold text-emerald-700 sm:text-3xl">
                 {balance ? formatRupiah(balance.saldo_kas) : "…"}
               </p>
-              <p className="mt-1 text-sm text-emerald-800/70">
+              <p className="mt-1 text-sm text-emerald-800/70 break-words">
                 Masuk {formatRupiah(balance?.total_masuk ?? 0)} · Keluar{" "}
                 {formatRupiah(balance?.total_keluar ?? 0)}
               </p>
@@ -139,11 +141,11 @@ function CashPage() {
       </section>
 
       <Tabs defaultValue="bills">
-        <TabsList className="flex w-full flex-wrap justify-start">
-          <TabsTrigger value="bills">Tagihan Saya</TabsTrigger>
-          {manage && <TabsTrigger value="programs">Kelola Program</TabsTrigger>}
+        <TabsList className="grid h-auto w-full grid-cols-2 gap-1 sm:inline-flex sm:h-9 sm:w-auto">
+          <TabsTrigger className="min-w-0 whitespace-normal py-2 text-center sm:whitespace-nowrap sm:py-1" value="bills">Tagihan Saya</TabsTrigger>
+          {manage && <TabsTrigger className="min-w-0 whitespace-normal py-2 text-center sm:whitespace-nowrap sm:py-1" value="programs">Kelola Program</TabsTrigger>}
           {manage && (
-            <TabsTrigger value="verify">
+            <TabsTrigger className="min-w-0 whitespace-normal py-2 text-center sm:whitespace-nowrap sm:py-1" value="verify">
               Verifikasi
               {pending.length > 0 && (
                 <span className="ml-2 rounded-full bg-destructive px-2 py-0.5 text-[11px] font-semibold text-destructive-foreground">
@@ -152,7 +154,7 @@ function CashPage() {
               )}
             </TabsTrigger>
           )}
-          <TabsTrigger value="expenses">Pengeluaran Kas</TabsTrigger>
+          <TabsTrigger className="min-w-0 whitespace-normal py-2 text-center sm:whitespace-nowrap sm:py-1" value="expenses">Pengeluaran Kas</TabsTrigger>
         </TabsList>
 
         <TabsContent value="bills" className="mt-4">

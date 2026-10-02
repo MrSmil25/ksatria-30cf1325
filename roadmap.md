@@ -7,3 +7,4 @@
 - [x] Apply Navy Trust tokens, Outfit/Figtree typography, and subtle motion.
 - [x] Add desktop, tablet, mobile, and reduced-motion refinements.
 - [x] Confirm the latest preview build succeeds.
+- [x] Keep mobile Kas tabs, related section tabs, and bottom navigation readable without overlap.

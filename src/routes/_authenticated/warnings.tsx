@@ -157,7 +157,7 @@ function WarningsPage() {
       </header>
 
       <Tabs defaultValue="saya">
-        <TabsList className="flex-wrap">
+        <TabsList>
           <TabsTrigger value="saya">Untuk Saya</TabsTrigger>
           <TabsTrigger value="terbit">Yang Saya Terbitkan</TabsTrigger>
           {kadiv && <TabsTrigger value="divisi">Divisi Saya</TabsTrigger>}
