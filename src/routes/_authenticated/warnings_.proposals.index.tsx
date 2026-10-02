@@ -116,7 +116,7 @@ function ProposalsPage() {
       </header>
 
       <Tabs defaultValue="aktif">
-        <TabsList className="flex-wrap">
+        <TabsList>
           <TabsTrigger value="aktif">Aktif</TabsTrigger>
           {mine.length > 0 && <TabsTrigger value="saya">Untuk Saya</TabsTrigger>}
           <TabsTrigger value="ajukan">Yang Saya Ajukan</TabsTrigger>

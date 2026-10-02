@@ -970,14 +970,14 @@
   border-radius: 0.85rem;
   color: var(--dash-muted);
   font-size: 0.65rem;
-  line-height: 1;
+  line-height: 1.2;
 }
 
 .workspace-mobile-link > span {
   max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  padding-inline: 0.1rem;
+  text-align: center;
+  overflow-wrap: anywhere;
 }
 
 .workspace-mobile-link[data-active="true"] {
