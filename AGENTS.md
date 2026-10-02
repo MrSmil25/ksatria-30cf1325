@@ -8,3 +8,5 @@
 > Commits you push to the connected branch sync back to Lovable and show up in
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
+
+- Keep shared tab lists single-row and horizontally scrollable; use an auto-height grid only for Kas's mobile tabs so wrapped labels cannot overlap page content.
