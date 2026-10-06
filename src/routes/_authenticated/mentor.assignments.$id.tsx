@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Switch } from "@/components/ui/switch";
 import { UserAvatar } from "@/components/UserAvatar";
 import { useDivisions, useMyProfile, useProfiles, isSupervisor } from "@/hooks/useProfile";
 import {
@@ -18,6 +19,7 @@ import {
   fetchSubmissions,
   scopeLabel,
   setAssignmentActive,
+  setPeersCanView,
   signedFileUrl,
   visibilityHint,
 } from "@/lib/assignments";
@@ -93,6 +95,15 @@ function AssignmentDetailPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["assignment", id] });
       queryClient.invalidateQueries({ queryKey: ["mentor-assignments"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const togglePeers = useMutation({
+    mutationFn: (v: boolean) => setPeersCanView(id, v),
+    onSuccess: (_d, v) => {
+      toast.success(v ? "Anggota kini dapat melihat jawaban rekan." : "Jawaban kembali pribadi.");
+      queryClient.invalidateQueries({ queryKey: ["assignment", id] });
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -173,6 +184,20 @@ function AssignmentDetailPage() {
           </p>
         )}
         <p className="mt-3 text-xs text-muted-foreground">{visibilityHint(assignment.visibility)}</p>
+        <label className="mt-3 flex items-start gap-3 rounded-xl border bg-muted/40 p-3">
+          <Switch
+            checked={!!assignment.peers_can_view}
+            disabled={togglePeers.isPending}
+            onCheckedChange={(v) => togglePeers.mutate(v)}
+          />
+          <span>
+            <span className="block text-sm font-semibold">Anggota boleh melihat jawaban rekan</span>
+            <span className="block text-xs text-muted-foreground">
+              Jika aktif, setiap anggota sasaran tugas ini dapat memilih dan membaca jawaban anggota
+              lain. Catatan Pembina tetap pribadi.
+            </span>
+          </span>
+        </label>
         <div className="mt-4 space-y-1">
           <Progress value={percent} />
           <p className="text-xs text-muted-foreground">

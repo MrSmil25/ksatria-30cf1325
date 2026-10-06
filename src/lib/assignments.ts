@@ -178,6 +178,40 @@ export async function setAssignmentActive(id: string, active: boolean): Promise<
   if (error) throw error;
 }
 
+export async function setPeersCanView(id: string, value: boolean): Promise<void> {
+  const { error } = await supabase
+    .from("assignments")
+    .update({ peers_can_view: value, updated_at: new Date().toISOString() })
+    .eq("id", id);
+  if (error) throw error;
+}
+
+export type PeerSubmission = {
+  id: string;
+  member_id: string;
+  content: string | null;
+  file_url: string | null;
+  submitted_at: string | null;
+  member: { full_name: string; division: string | null; photo_url: string | null } | null;
+};
+
+/** Jawaban anggota lain untuk satu tugas (hanya terbaca bila Pembina mengizinkan). */
+export async function fetchPeerSubmissions(
+  assignmentId: string,
+  myId: string,
+): Promise<PeerSubmission[]> {
+  const { data, error } = await supabase
+    .from("assignment_submissions")
+    .select(
+      "id,member_id,content,file_url,submitted_at,member:profiles!assignment_submissions_member_id_fkey(full_name,division,photo_url)",
+    )
+    .eq("assignment_id", assignmentId)
+    .neq("member_id", myId)
+    .order("submitted_at", { ascending: false });
+  if (error) throw error;
+  return (data ?? []) as unknown as PeerSubmission[];
+}
+
 export async function commentSubmission(
   submissionId: string,
   comment: string,

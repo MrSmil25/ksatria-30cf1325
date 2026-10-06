@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState, type ChangeEvent } from "react";
-import { GraduationCap, Lock, Paperclip } from "lucide-react";
+import { GraduationCap, Lock, Paperclip, Users } from "lucide-react";
 import { toast } from "sonner";
 import { format, isBefore } from "date-fns";
 import { id as idLocale } from "date-fns/locale";
@@ -11,6 +11,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   Dialog,
   DialogContent,
   DialogHeader,
@@ -19,6 +26,7 @@ import {
 import { useMyProfile } from "@/hooks/useProfile";
 import { useMyAssignments, useMySubmissions } from "@/hooks/useAssignments";
 import {
+  fetchPeerSubmissions,
   signedFileUrl,
   uploadSubmissionFile,
   upsertSubmission,
@@ -105,6 +113,73 @@ function AssignmentCard({
         </p>
       )}
     </button>
+  );
+}
+
+function PeerFile({ path }: { path: string }) {
+  const { data: url } = useQuery({
+    queryKey: ["submission-file", path],
+    queryFn: () => signedFileUrl(path),
+  });
+  if (!url) return null;
+  return (
+    <a
+      href={url}
+      target="_blank"
+      rel="noreferrer"
+      className="mt-2 flex items-center gap-2 text-sm text-primary underline"
+    >
+      <Paperclip className="size-4" /> Lihat lampiran
+    </a>
+  );
+}
+
+function PeerAnswers({ assignmentId, myId }: { assignmentId: string; myId: string }) {
+  const { data: peers = [], isLoading } = useQuery({
+    queryKey: ["peer-submissions", assignmentId, myId],
+    queryFn: () => fetchPeerSubmissions(assignmentId, myId),
+  });
+  const [selected, setSelected] = useState<string>("");
+  const chosen = peers.find((p) => p.id === selected) ?? null;
+
+  return (
+    <div className="space-y-2 rounded-xl border p-3">
+      <Label className="flex items-center gap-2">
+        <Users className="size-4 text-primary" /> Lihat jawaban anggota lain
+      </Label>
+      {isLoading ? (
+        <Skeleton className="h-9 w-full" />
+      ) : peers.length === 0 ? (
+        <p className="text-xs text-muted-foreground">Belum ada anggota lain yang mengumpulkan.</p>
+      ) : (
+        <Select value={selected} onValueChange={setSelected}>
+          <SelectTrigger>
+            <SelectValue placeholder={`Pilih anggota (${peers.length})`} />
+          </SelectTrigger>
+          <SelectContent>
+            {peers.map((p) => (
+              <SelectItem key={p.id} value={p.id}>
+                {p.member?.full_name ?? "Anggota"}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      )}
+      {chosen && (
+        <div className="rounded-lg bg-muted p-3">
+          <p className="text-xs text-muted-foreground">
+            {chosen.member?.full_name} ·{" "}
+            {chosen.submitted_at
+              ? format(new Date(chosen.submitted_at), "d MMM yyyy, HH:mm", { locale: idLocale })
+              : "-"}
+          </p>
+          {chosen.content && (
+            <p className="mt-2 whitespace-pre-line break-words text-sm">{chosen.content}</p>
+          )}
+          {chosen.file_url && <PeerFile path={chosen.file_url} />}
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -253,7 +328,12 @@ function DetailDialog({
             <p className="flex items-start gap-2 text-xs text-muted-foreground">
               <Lock className="mt-0.5 size-3.5 shrink-0" />
               {visibilityHint(item.visibility)}
+              {item.peers_can_view ? " Pembina juga mengizinkan anggota lain membaca jawaban di tugas ini." : ""}
             </p>
+
+            {item.peers_can_view && profile && (
+              <PeerAnswers assignmentId={item.id} myId={profile.id} />
+            )}
 
             <Button
               className="w-full"
