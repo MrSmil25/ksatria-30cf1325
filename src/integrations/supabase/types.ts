@@ -674,6 +674,7 @@ export type Database = {
           instructions: string | null
           is_active: boolean | null
           is_cancelled: boolean
+          peers_can_view: boolean
           scope: Database["public"]["Enums"]["assignment_scope"]
           target_division: string | null
           title: string
@@ -697,6 +698,7 @@ export type Database = {
           instructions?: string | null
           is_active?: boolean | null
           is_cancelled?: boolean
+          peers_can_view?: boolean
           scope?: Database["public"]["Enums"]["assignment_scope"]
           target_division?: string | null
           title: string
@@ -720,6 +722,7 @@ export type Database = {
           instructions?: string | null
           is_active?: boolean | null
           is_cancelled?: boolean
+          peers_can_view?: boolean
           scope?: Database["public"]["Enums"]["assignment_scope"]
           target_division?: string | null
           title?: string
@@ -7532,6 +7535,10 @@ export type Database = {
       }
       can_view_internal_submission: {
         Args: { sub_id: string; viewer_id: string }
+        Returns: boolean
+      }
+      can_view_peer_submission: {
+        Args: { p_assignment: string }
         Returns: boolean
       }
       cancel_picket_fine: { Args: { p_fine: string }; Returns: undefined }
