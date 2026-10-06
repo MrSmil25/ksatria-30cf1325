@@ -14,11 +14,11 @@ import {
   UserRound,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase-external";
+import { formatDateID } from "@/lib/format";
 import {
   PRIORITY_CLASS,
   TASK_PRIORITY_LABEL,
   TASK_STATUS_LABEL,
-  formatDateID,
 } from "@/lib/workspace";
 import { originChip, type OriginMaps } from "@/lib/task-origin";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
