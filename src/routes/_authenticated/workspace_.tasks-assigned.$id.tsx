@@ -74,6 +74,7 @@ function AssignedTaskDetailPage() {
 
   const [cancelOpen, setCancelOpen] = useState(false);
   const [commentTarget, setCommentTarget] = useState<InternalSubmission | null>(null);
+  const [personFilter, setPersonFilter] = useState("all");
   const [commentText, setCommentText] = useState("");
   const [approveTarget, setApproveTarget] = useState<InternalSubmission | null>(null);
   const [escalateTarget, setEscalateTarget] = useState<InternalSubmission | null>(null);
@@ -319,7 +320,26 @@ function AssignedTaskDetailPage() {
             Belum ada penerima terdaftar.
           </p>
         ) : (
-          targetMembers.map((p) => {
+          <>
+          <select
+            value={personFilter}
+            onChange={(e) => setPersonFilter(e.target.value)}
+            className="h-10 w-full rounded-xl border bg-card px-3 text-sm sm:w-72"
+            aria-label="Pilih nama anggota"
+          >
+            <option value="all">Semua anggota (A–Z)</option>
+            {[...targetMembers]
+              .sort((a, b) => (a.full_name ?? "").localeCompare(b.full_name ?? "", "id"))
+              .map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.full_name ?? "Anggota"}
+                </option>
+              ))}
+          </select>
+          {[...targetMembers]
+            .sort((a, b) => (a.full_name ?? "").localeCompare(b.full_name ?? "", "id"))
+            .filter((p) => personFilter === "all" || p.id === personFilter)
+            .map((p) => {
             const s = subByMember.get(p.id);
             const subEsc = (escalations ?? []).filter((e) => e?.submission_id === s?.id);
             return (
@@ -410,7 +430,8 @@ function AssignedTaskDetailPage() {
                 )}
               </article>
             );
-          })
+          })}
+          </>
         )}
       </section>
 
