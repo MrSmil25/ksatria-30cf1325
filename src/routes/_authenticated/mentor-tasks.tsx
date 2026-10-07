@@ -521,6 +521,8 @@ function MentorTasksPage() {
               />
             ))}
           </section>
+
+          <WorkResultsSection />
         </div>
       )}
 
