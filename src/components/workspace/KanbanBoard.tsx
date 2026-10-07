@@ -30,7 +30,9 @@ function TaskCard({
   directCancel,
   onCancel,
   onDragStart,
+  onOpen,
 }: {
+  onOpen?: (() => void) | undefined;
   task: MyTask;
   maps?: OriginMaps | undefined;
   pendingCancel?: boolean | undefined;
@@ -47,7 +49,19 @@ function TaskCard({
     <article
       draggable
       onDragStart={onDragStart}
-      className="cursor-grab space-y-2 rounded-xl border bg-card p-3 shadow-sm active:cursor-grabbing"
+      role="button"
+      tabIndex={0}
+      onClick={(e) => {
+        if ((e.target as HTMLElement).closest("[data-no-open]")) return;
+        onOpen?.();
+      }}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onOpen?.();
+        }
+      }}
+      className="cursor-pointer hover:border-primary/40 space-y-2 rounded-xl border bg-card p-3 shadow-sm active:cursor-grabbing"
     >
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0 flex-1 space-y-1">
@@ -60,6 +74,7 @@ function TaskCard({
           <p className="text-sm font-medium leading-snug">{task.title}</p>
         </div>
         {cancellable && (
+          <div data-no-open onClick={(e) => e.stopPropagation()}>
           <DropdownMenu>
             <DropdownMenuTrigger
               aria-label="Aksi task"
@@ -77,6 +92,7 @@ function TaskCard({
               )}
             </DropdownMenuContent>
           </DropdownMenu>
+          </div>
         )}
       </div>
       <div className="flex flex-wrap items-center gap-1.5">
@@ -127,7 +143,9 @@ export function KanbanBoard({
   canCancel,
   directCancel,
   onCancel,
+  onOpen,
 }: {
+  onOpen?: ((task: MyTask) => void) | undefined;
   tasks: MyTask[];
   onMove: (id: string, status: TaskStatus) => void;
   maps?: OriginMaps | undefined;
@@ -180,6 +198,7 @@ export function KanbanBoard({
                   directCancel={directCancel}
                   onCancel={onCancel}
                   onDragStart={() => setDragId(t.id)}
+                  onOpen={() => onOpen?.(t)}
                 />
               ))
             )}
