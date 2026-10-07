@@ -18,6 +18,7 @@ import {
 import { setTaskBlocked } from "@/lib/hr";
 import { BlockedTaskDialog } from "@/components/hr/BlockedTaskDialog";
 import { KanbanBoard } from "@/components/workspace/KanbanBoard";
+import { TaskDetailDialog } from "@/components/workspace/TaskDetailDialog";
 import { TaskFormDialog } from "@/components/workspace/TaskFormDialog";
 import { MyReimbursementNotice } from "@/components/fund-requests/MyReimbursementNotice";
 import { Button } from "@/components/ui/button";
@@ -92,6 +93,7 @@ function WorkspacePage() {
   const { data: profile } = useMyProfile();
   const queryClient = useQueryClient();
   const [userId, setUserId] = useState<string | null>(null);
+  const [detailId, setDetailId] = useState<string | null>(null);
   const [showPrivate, setShowPrivate] = useState(true);
   const [formOpen, setFormOpen] = useState(false);
   const [blockTarget, setBlockTarget] = useState<{ id: string; title: string } | null>(null);
@@ -315,6 +317,7 @@ function WorkspacePage() {
               pendingCancelTaskIds={pendingCancelTaskIds}
               canCancel
               directCancel={kadiv}
+              onOpen={(task) => setDetailId(task.id)}
               onCancel={(task) => setCancelTarget({ id: task.id, title: task.title })}
               onMove={(id, status) => {
                 const task = tasks.find((t) => t.id === id);
@@ -328,7 +331,7 @@ function WorkspacePage() {
             />
           )}
           <p className="text-xs text-muted-foreground">
-            Tarik kartu task ke kolom lain untuk mengubah statusnya.
+            Ketuk kartu untuk melihat detail. Tarik kartu ke kolom lain untuk mengubah statusnya.
           </p>
         </section>
       )}
@@ -389,6 +392,13 @@ function WorkspacePage() {
           Tampilan ini hanya baca. Perubahan deal dilakukan di halaman Pipeline.
         </p>
       </section>
+
+      <TaskDetailDialog
+        task={tasks.find((t) => t.id === detailId) ?? null}
+        maps={originMaps}
+        open={!!detailId}
+        onOpenChange={(o) => !o && setDetailId(null)}
+      />
 
       <TaskFormDialog
         open={formOpen}
