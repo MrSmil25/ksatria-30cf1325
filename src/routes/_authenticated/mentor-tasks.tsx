@@ -25,6 +25,8 @@ import {
 } from "@/components/ui/dialog";
 import { useMyProfile } from "@/hooks/useProfile";
 import { useMyAssignments, useMySubmissions } from "@/hooks/useAssignments";
+import { supabase } from "@/lib/supabase-external";
+import { UserAvatar } from "@/components/UserAvatar";
 import {
   fetchPeerSubmissions,
   signedFileUrl,
@@ -34,6 +36,114 @@ import {
   type Assignment,
   type AssignmentSubmission,
 } from "@/lib/assignments";
+
+type WorkResultRow = {
+  id: string;
+  submitted_at: string | null;
+  content: string | null;
+  file_url: string | null;
+  member: { full_name: string; photo_url: string | null } | null;
+  assignment: { title: string } | null;
+};
+
+/** Hasil kerja seluruh anggota pada tugas Pembina, dikelompokkan per orang (A–Z). */
+function WorkResultsSection() {
+  const { data: rows = [], isLoading } = useQuery({
+    queryKey: ["work-results-mentor"],
+    queryFn: async (): Promise<WorkResultRow[]> => {
+      const { data, error } = await supabase
+        .from("assignment_submissions")
+        .select(
+          "id,submitted_at,content,file_url,member:profiles!assignment_submissions_member_id_fkey(full_name,photo_url),assignment:assignments(title)",
+        )
+        .order("submitted_at", { ascending: false });
+      if (error) throw error;
+      return (data ?? []) as unknown as WorkResultRow[];
+    },
+  });
+  const [personFilter, setPersonFilter] = useState("all");
+
+  const groups = new Map<string, { photo: string | null; items: WorkResultRow[] }>();
+  for (const r of rows) {
+    const name = r.member?.full_name ?? "Anggota";
+    const g = groups.get(name) ?? { photo: r.member?.photo_url ?? null, items: [] };
+    g.items.push(r);
+    groups.set(name, g);
+  }
+  const names = [...groups.keys()].sort((a, b) => a.localeCompare(b, "id"));
+  const visible = names.filter((n) => personFilter === "all" || n === personFilter);
+
+  return (
+    <section className="space-y-3">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h2 className="text-sm font-semibold tracking-wide text-muted-foreground">
+          HASIL KERJA ({rows.length})
+        </h2>
+        {names.length > 1 && (
+          <select
+            value={personFilter}
+            onChange={(e) => setPersonFilter(e.target.value)}
+            className="h-10 w-full rounded-xl border bg-card px-3 text-sm sm:w-64"
+            aria-label="Pilih nama anggota"
+          >
+            <option value="all">Semua anggota (A–Z)</option>
+            {names.map((n) => (
+              <option key={n} value={n}>
+                {n}
+              </option>
+            ))}
+          </select>
+        )}
+      </div>
+      {isLoading ? (
+        <Skeleton className="h-32 w-full rounded-2xl" />
+      ) : names.length === 0 ? (
+        <p className="text-sm text-muted-foreground">Belum ada hasil kerja yang terkumpul.</p>
+      ) : (
+        visible.map((name) => {
+          const g = groups.get(name)!;
+          return (
+            <article key={name} className="rounded-2xl border bg-card p-5 shadow-sm">
+              <div className="flex items-center gap-3">
+                <UserAvatar path={g.photo} name={name} className="size-9" />
+                <div>
+                  <p className="text-sm font-semibold">{name}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {g.items.length} hasil kerja
+                  </p>
+                </div>
+              </div>
+              <ul className="mt-3 space-y-2">
+                {g.items.map((r) => (
+                  <li key={r.id} className="rounded-xl bg-muted p-3">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <p className="text-sm font-medium">
+                        {r.assignment?.title ?? "Tugas"}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {r.submitted_at
+                          ? format(new Date(r.submitted_at), "d MMM yyyy, HH:mm", {
+                              locale: idLocale,
+                            })
+                          : "-"}
+                      </p>
+                    </div>
+                    {r.content && (
+                      <p className="mt-1 line-clamp-3 whitespace-pre-line break-words text-sm text-muted-foreground">
+                        {r.content}
+                      </p>
+                    )}
+                    {r.file_url && <PeerFile path={r.file_url} />}
+                  </li>
+                ))}
+              </ul>
+            </article>
+          );
+        })
+      )}
+    </section>
+  );
+}
 
 export const Route = createFileRoute("/_authenticated/mentor-tasks")({
   head: () => ({
