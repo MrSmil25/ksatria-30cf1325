@@ -139,6 +139,11 @@ function AssignmentDetailPage() {
   const notYet = targets.filter((p) => !submittedIds.has(p.id));
   const percent = targets.length > 0 ? Math.round((submissions.length / targets.length) * 100) : 0;
   const divName = divisions.find((d) => d.code === assignment.target_division)?.name;
+  const sortedSubs = submissions
+    .map((s) => ({ s, member: profiles.find((p) => p.id === s.member_id) }))
+    .sort((a, b) =>
+      (a.member?.full_name ?? "").localeCompare(b.member?.full_name ?? "", "id"),
+    );
 
   return (
     <div className="mx-auto max-w-4xl space-y-6">
