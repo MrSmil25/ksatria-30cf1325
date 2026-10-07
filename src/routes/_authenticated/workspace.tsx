@@ -89,6 +89,105 @@ function SummaryCard({
   );
 }
 
+type DoneTaskRow = {
+  id: string;
+  title: string;
+  updated_at: string | null;
+  assignee: { full_name: string; photo_url: string | null } | null;
+};
+
+/** Task yang sudah selesai, dikelompokkan per nama pengerja (A–Z). */
+function WorkResultsSection() {
+  const { data: rows = [], isLoading } = useQuery({
+    queryKey: ["work-results-tasks"],
+    queryFn: async (): Promise<DoneTaskRow[]> => {
+      const { data, error } = await supabase
+        .from("tasks")
+        .select(
+          "id,title,updated_at,assignee:profiles!tasks_assignee_id_fkey(full_name,photo_url)",
+        )
+        .eq("status", "Done")
+        .order("updated_at", { ascending: false })
+        .limit(200);
+      if (error) throw error;
+      return (data ?? []) as unknown as DoneTaskRow[];
+    },
+  });
+  const [personFilter, setPersonFilter] = useState("all");
+
+  const groups = new Map<string, { photo: string | null; items: DoneTaskRow[] }>();
+  for (const r of rows) {
+    const name = r.assignee?.full_name ?? "Anggota";
+    const g = groups.get(name) ?? { photo: r.assignee?.photo_url ?? null, items: [] };
+    g.items.push(r);
+    groups.set(name, g);
+  }
+  const names = [...groups.keys()].sort((a, b) => a.localeCompare(b, "id"));
+  const visible = names.filter((n) => personFilter === "all" || n === personFilter);
+
+  return (
+    <section className="space-y-3">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h2 className="text-lg font-semibold">Hasil Kerja ({rows.length})</h2>
+        {names.length > 1 && (
+          <select
+            value={personFilter}
+            onChange={(e) => setPersonFilter(e.target.value)}
+            className="h-10 w-full rounded-xl border bg-card px-3 text-sm sm:w-64"
+            aria-label="Pilih nama anggota"
+          >
+            <option value="all">Semua anggota (A–Z)</option>
+            {names.map((n) => (
+              <option key={n} value={n}>
+                {n}
+              </option>
+            ))}
+          </select>
+        )}
+      </div>
+      {isLoading ? (
+        <Skeleton className="h-32 w-full rounded-2xl" />
+      ) : names.length === 0 ? (
+        <p className="text-sm text-muted-foreground">Belum ada task yang selesai.</p>
+      ) : (
+        <div className="grid gap-3 md:grid-cols-2">
+          {visible.map((name) => {
+            const g = groups.get(name)!;
+            return (
+              <article key={name} className="rounded-2xl border bg-card p-5 shadow-sm">
+                <div className="flex items-center gap-3">
+                  <span className="flex size-9 items-center justify-center rounded-full bg-secondary text-sm font-semibold text-primary">
+                    {name.charAt(0).toUpperCase()}
+                  </span>
+                  <div>
+                    <p className="text-sm font-semibold">{name}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {g.items.length} task selesai
+                    </p>
+                  </div>
+                </div>
+                <ul className="mt-3 space-y-2">
+                  {g.items.map((r) => (
+                    <li
+                      key={r.id}
+                      className="flex items-center justify-between gap-2 rounded-xl bg-muted px-3 py-2"
+                    >
+                      <p className="text-sm font-medium">{r.title}</p>
+                      <p className="shrink-0 text-xs text-muted-foreground">
+                        {formatDateID(r.updated_at)}
+                      </p>
+                    </li>
+                  ))}
+                </ul>
+              </article>
+            );
+          })}
+        </div>
+      )}
+    </section>
+  );
+}
+
 function WorkspacePage() {
   const { data: profile } = useMyProfile();
   const queryClient = useQueryClient();
