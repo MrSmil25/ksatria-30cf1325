@@ -65,6 +65,7 @@ function AssignmentDetailPage() {
   const { data: divisions = [] } = useDivisions();
   const queryClient = useQueryClient();
   const [drafts, setDrafts] = useState<Record<string, string>>({});
+  const [personFilter, setPersonFilter] = useState("all");
 
   const { data: assignment, isLoading } = useQuery({
     queryKey: ["assignment", id],
@@ -225,8 +226,24 @@ function AssignmentDetailPage() {
         <h2 className="text-sm font-semibold tracking-wide text-muted-foreground">
           KUMPULAN ({submissions.length})
         </h2>
-        {submissions.map((s) => {
-          const member = profiles.find((p) => p.id === s.member_id);
+        {submissions.length > 0 && (
+          <select
+            value={personFilter}
+            onChange={(e) => setPersonFilter(e.target.value)}
+            className="h-10 w-full rounded-xl border bg-card px-3 text-sm sm:w-72"
+            aria-label="Pilih nama anggota"
+          >
+            <option value="all">Semua anggota (A–Z)</option>
+            {sortedSubs.map(({ s, member }) => (
+              <option key={s.id} value={s.member_id ?? ""}>
+                {member?.full_name ?? "Anggota"}
+              </option>
+            ))}
+          </select>
+        )}
+        {sortedSubs
+          .filter(({ s }) => personFilter === "all" || s.member_id === personFilter)
+          .map(({ s, member }) => {
           return (
             <article key={s.id} className="rounded-2xl border bg-card p-5 shadow-sm">
               <div className="flex items-center gap-3">

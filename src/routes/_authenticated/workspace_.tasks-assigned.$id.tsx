@@ -430,7 +430,8 @@ function AssignedTaskDetailPage() {
                 )}
               </article>
             );
-          })
+          })}
+          </>
         )}
       </section>
 
