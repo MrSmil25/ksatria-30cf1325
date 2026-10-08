@@ -492,6 +492,10 @@ function WorkspacePage() {
         </p>
       </section>
 
+      <div className={cn(tab !== "board" && "hidden")}>
+        <WorkResultsSection />
+      </div>
+
       <TaskDetailDialog
         task={tasks.find((t) => t.id === detailId) ?? null}
         maps={originMaps}
