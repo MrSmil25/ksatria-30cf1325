@@ -21,6 +21,8 @@ export const Route = createFileRoute("/_authenticated/notifications")({
       { name: "description", content: "Semua notifikasi kamu di OrgTool." },
       { property: "og:title", content: "Notifikasi — OrgTool" },
       { property: "og:description", content: "Semua notifikasi kamu di OrgTool." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: NotificationsPage,
@@ -53,7 +55,9 @@ function NotificationsPage() {
       }
       refresh();
     }
-    if (n.link) navigate({ to: n.link as string });
+    if (n.link === "/workspace?tab=assigned-to-me") {
+      navigate({ to: "/workspace", search: { tab: "assigned-to-me" } });
+    } else if (n.link) navigate({ to: n.link as string });
   }
 
   return (

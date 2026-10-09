@@ -8,3 +8,5 @@
 - [x] Add desktop, tablet, mobile, and reduced-motion refinements.
 - [x] Confirm the latest preview build succeeds.
 - [x] Keep mobile Kas tabs, related section tabs, and bottom navigation readable without overlap.
+- [ ] Send workspace task notifications and persist explicit read confirmations.
+- [ ] Verify task confirmation behavior and preview health.

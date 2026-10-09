@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { signedFileUrl } from "@/lib/assignments";
 import type { Profile } from "@/hooks/useProfile";
+import { TaskReadConfirmation } from "@/components/workspace/TaskReadConfirmation";
 import {
   reviewStatusClass,
   reviewStatusLabel,
@@ -133,6 +134,8 @@ export function ReceivedTaskCard({
       <p className={`mt-3 text-xs ${dueSoon ? "font-semibold text-red-600" : "text-muted-foreground"}`}>
         Tenggat: {formatDue(assignment?.due_date)}
       </p>
+
+      {!locked && <div className="mt-3"><TaskReadConfirmation kind="assignment" taskId={assignment.id} /></div>}
 
       <div className="mt-3 rounded-xl border bg-background p-3">
         <p className="flex items-center gap-2 text-xs font-semibold">
