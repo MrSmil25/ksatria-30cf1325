@@ -26,6 +26,7 @@ import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import type { MyTask } from "@/lib/workspace";
+import { TaskReadConfirmation } from "@/components/workspace/TaskReadConfirmation";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 const db = supabase as unknown as { from: (table: string) => any };
@@ -289,6 +290,7 @@ export function TaskDetailDialog({
             )}
 
             <Separator />
+            <TaskReadConfirmation kind="task" taskId={task.id} />
             <p className="text-center text-xs text-muted-foreground">
               Untuk memindahkan status task, tarik kartunya di papan atau lepaskan ke kolom lain.
             </p>

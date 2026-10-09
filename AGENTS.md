@@ -10,3 +10,4 @@
 <!-- LOVABLE:END -->
 
 - Keep shared tab lists single-row and horizontally scrollable; use an auto-height grid only for Kas's mobile tabs so wrapped labels cannot overlap page content.
+- Persist workspace read confirmations separately from submissions and notification read status; recipient-scoped database permissions prevent confirming another member's task.

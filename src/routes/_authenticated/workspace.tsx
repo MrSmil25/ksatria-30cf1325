@@ -42,6 +42,8 @@ import { AssignedToMeTab } from "@/components/workspace-assignments/AssignedToMe
 import { AssignedByMeTab } from "@/components/workspace-assignments/AssignedByMeTab";
 
 export const Route = createFileRoute("/_authenticated/workspace")({
+  validateSearch: (search: Record<string, unknown>): { tab?: "assigned-to-me" } =>
+    search.tab === "assigned-to-me" ? { tab: "assigned-to-me" } : {},
   head: () => ({
     meta: [
       { title: "Ruang Kerja Saya — OrgTool" },
@@ -189,6 +191,7 @@ function WorkResultsSection() {
 }
 
 function WorkspacePage() {
+  const search = Route.useSearch();
   const { data: profile } = useMyProfile();
   const queryClient = useQueryClient();
   const [userId, setUserId] = useState<string | null>(null);
@@ -204,6 +207,10 @@ function WorkspacePage() {
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setUserId(data.user?.id ?? null));
   }, []);
+
+  useEffect(() => {
+    if (search.tab === "assigned-to-me") setTab("assigned-to-me");
+  }, [search.tab]);
 
   const { data, isLoading } = useQuery({
     queryKey: ["my-workspace", userId],

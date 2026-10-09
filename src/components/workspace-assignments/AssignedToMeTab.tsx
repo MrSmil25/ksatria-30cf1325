@@ -44,6 +44,7 @@ export function AssignedToMeTab({ me }: { me: Profile | null | undefined }) {
     queryFn: () =>
       fetchInternalAssignmentsForMe({ id: me?.id as string, division: me?.division ?? null }),
     enabled: !!me?.id,
+    refetchInterval: 45_000,
   });
 
   const submissionsQuery = useQuery({
