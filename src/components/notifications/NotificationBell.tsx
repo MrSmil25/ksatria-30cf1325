@@ -70,7 +70,9 @@ export function NotificationBell() {
       }
       refresh();
     }
-    if (n.link) navigate({ to: n.link as string });
+    if (n.link === "/workspace?tab=assigned-to-me") {
+      navigate({ to: "/workspace", search: { tab: "assigned-to-me" } });
+    } else if (n.link) navigate({ to: n.link as string });
   }
 
   async function handleMarkAll() {
