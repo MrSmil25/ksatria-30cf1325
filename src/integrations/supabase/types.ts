@@ -6884,6 +6884,93 @@ export type Database = {
           },
         ]
       }
+      workspace_task_reads: {
+        Row: {
+          assignment_id: string | null
+          created_at: string
+          id: string
+          member_id: string
+          read_at: string
+          task_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          assignment_id?: string | null
+          created_at?: string
+          id?: string
+          member_id: string
+          read_at?: string
+          task_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          assignment_id?: string | null
+          created_at?: string
+          id?: string
+          member_id?: string
+          read_at?: string
+          task_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workspace_task_reads_assignment_id_fkey"
+            columns: ["assignment_id"]
+            isOneToOne: false
+            referencedRelation: "assignment_progress"
+            referencedColumns: ["assignment_id"]
+          },
+          {
+            foreignKeyName: "workspace_task_reads_assignment_id_fkey"
+            columns: ["assignment_id"]
+            isOneToOne: false
+            referencedRelation: "assignments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workspace_task_reads_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: false
+            referencedRelation: "design_workload"
+            referencedColumns: ["designer_id"]
+          },
+          {
+            foreignKeyName: "workspace_task_reads_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: false
+            referencedRelation: "member_holdings"
+            referencedColumns: ["member_id"]
+          },
+          {
+            foreignKeyName: "workspace_task_reads_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: false
+            referencedRelation: "member_progress"
+            referencedColumns: ["member_id"]
+          },
+          {
+            foreignKeyName: "workspace_task_reads_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workspace_task_reads_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: false
+            referencedRelation: "workload_distribution"
+            referencedColumns: ["member_id"]
+          },
+          {
+            foreignKeyName: "workspace_task_reads_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       announcement_read_status: {
@@ -7521,6 +7608,10 @@ export type Database = {
       }
     }
     Functions: {
+      acknowledge_workspace_task: {
+        Args: { p_id: string; p_kind: string }
+        Returns: string
+      }
       archive_record: {
         Args: { p_reason?: string; p_record_id: string; p_table: string }
         Returns: string
