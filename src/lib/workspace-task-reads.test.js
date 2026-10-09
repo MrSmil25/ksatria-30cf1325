@@ -1,6 +1,6 @@
 import { describe, expect, test, mock } from "bun:test";
 
-const rpc = mock(async () => ({ data: "2026-10-09T12:00:00Z", error: null as Error | null }));
+const rpc = mock(async () => ({ data: "2026-10-09T12:00:00Z", error: null }));
 mock.module("@/lib/supabase-external", () => ({ supabase: { rpc } }));
 const { taskReadTime, confirmWorkspaceRead } = await import("./workspace-task-reads");
 
