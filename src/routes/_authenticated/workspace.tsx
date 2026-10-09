@@ -43,7 +43,7 @@ import { AssignedByMeTab } from "@/components/workspace-assignments/AssignedByMe
 
 export const Route = createFileRoute("/_authenticated/workspace")({
   validateSearch: (search: Record<string, unknown>): { tab?: "assigned-to-me" } =>
-    search.tab === "assigned-to-me" ? { tab: "assigned-to-me" } : {},
+    search["tab"] === "assigned-to-me" ? { tab: "assigned-to-me" } : {},
   head: () => ({
     meta: [
       { title: "Ruang Kerja Saya — OrgTool" },
