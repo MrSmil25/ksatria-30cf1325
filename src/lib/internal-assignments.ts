@@ -6,11 +6,7 @@ import { supabase } from "@/lib/supabase-external";
  * ============================================================ */
 
 export type ReviewStatus =
-  | "Dikumpulkan"
-  | "Direview"
-  | "Diteruskan"
-  | "Selesai"
-  | "Dibatalkan_Anggota";
+  "Dikumpulkan" | "Direview" | "Diteruskan" | "Selesai" | "Dibatalkan_Anggota";
 
 export type VisibilityFlags = {
   atasan_langsung?: boolean;
@@ -149,10 +145,7 @@ export function assignmentProgress(
   assignment: { is_cancelled?: boolean | null } | null | undefined,
   submission: { review_status?: ReviewStatus | string | null } | null | undefined,
 ): AssignmentProgress {
-  if (
-    assignment?.is_cancelled === true ||
-    submission?.review_status === "Dibatalkan_Anggota"
-  ) {
+  if (assignment?.is_cancelled === true || submission?.review_status === "Dibatalkan_Anggota") {
     return "cancelled";
   }
   if (submission?.review_status === "Selesai") return "done";

@@ -231,9 +231,7 @@ export function AssignedToMeTab({ me }: { me: Profile | null | undefined }) {
    */
   const progressOf = (a: InternalAssignment) => assignmentProgress(a, submissionOf(a.id));
 
-  const pending = (assignments ?? [])
-    .filter((a) => progressOf(a) === "pending")
-    .sort(byUrgency);
+  const pending = (assignments ?? []).filter((a) => progressOf(a) === "pending").sort(byUrgency);
   const done = (assignments ?? [])
     .filter((a) => progressOf(a) === "done")
     .sort((a, b) => byLatest(a, b, submissionOf, "done"));
@@ -312,8 +310,7 @@ export function AssignedToMeTab({ me }: { me: Profile | null | undefined }) {
               </span>
               <span className="min-w-0">
                 <span className="block text-sm font-semibold tracking-tight">
-                  Dibatalkan{" "}
-                  <span className="text-muted-foreground">({cancelled.length})</span>
+                  Dibatalkan <span className="text-muted-foreground">({cancelled.length})</span>
                 </span>
                 <span className="block text-xs text-muted-foreground">
                   Tugas yang dibatalkan pembuat atau kamu batalkan.
