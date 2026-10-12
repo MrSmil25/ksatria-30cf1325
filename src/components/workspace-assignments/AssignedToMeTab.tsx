@@ -1,11 +1,13 @@
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { Ban, CheckCircle2, ChevronDown, ChevronUp, ClipboardList } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useDivisions, useProfiles, type Profile } from "@/hooks/useProfile";
 import { uploadSubmissionFile } from "@/lib/assignments";
 import {
+  assignmentProgress,
   cancelByMember,
   cancelByMemberWithoutSubmission,
   fetchEscalationsFor,
@@ -30,6 +32,69 @@ function ErrorState({ onRetry }: { onRetry: () => void }) {
   );
 }
 
+function SectionHeading({
+  icon: Icon,
+  title,
+  count,
+  hint,
+}: {
+  icon: React.ElementType;
+  title: string;
+  count: number;
+  hint?: string;
+}) {
+  return (
+    <div className="flex flex-wrap items-center gap-3">
+      <span className="flex size-8 shrink-0 items-center justify-center rounded-xl bg-secondary text-primary">
+        <Icon className="size-4" />
+      </span>
+      <div className="min-w-0">
+        <h2 className="text-lg font-semibold tracking-tight">
+          {title} <span className="text-muted-foreground">({count})</span>
+        </h2>
+        {hint && <p className="text-xs text-muted-foreground">{hint}</p>}
+      </div>
+    </div>
+  );
+}
+
+const timeOf = (value?: string | null) => {
+  if (!value) return null;
+  const t = new Date(value).getTime();
+  return Number.isNaN(t) ? null : t;
+};
+
+/** Tenggat paling cepat dulu; tugas tanpa tenggat paling akhir. */
+function byUrgency(a: InternalAssignment, b: InternalAssignment) {
+  const da = timeOf(a?.due_date) ?? Number.POSITIVE_INFINITY;
+  const db = timeOf(b?.due_date) ?? Number.POSITIVE_INFINITY;
+  if (da !== db) return da - db;
+  return (timeOf(b?.created_at) ?? 0) - (timeOf(a?.created_at) ?? 0);
+}
+
+/** Yang paling baru selesai/dibatalkan paling atas. */
+function byLatest(
+  a: InternalAssignment,
+  b: InternalAssignment,
+  submissionOf: (id: string) => InternalSubmission | undefined,
+  mode: "done" | "cancelled",
+) {
+  const stampOf = (a: InternalAssignment) => {
+    const s = submissionOf(a.id);
+    if (mode === "done") {
+      return timeOf(s?.finalized_at) ?? timeOf(s?.submitted_at) ?? timeOf(a?.due_date) ?? 0;
+    }
+    return (
+      timeOf(a?.cancelled_at) ??
+      timeOf(s?.member_cancelled_at) ??
+      timeOf(s?.submitted_at) ??
+      timeOf(a?.created_at) ??
+      0
+    );
+  };
+  return stampOf(b) - stampOf(a);
+}
+
 export function AssignedToMeTab({ me }: { me: Profile | null | undefined }) {
   const queryClient = useQueryClient();
   const { data: profiles = [] } = useProfiles();
@@ -38,6 +103,7 @@ export function AssignedToMeTab({ me }: { me: Profile | null | undefined }) {
     assignmentId: string;
     submissionId: string | null;
   } | null>(null);
+  const [showCancelled, setShowCancelled] = useState(false);
 
   const assignmentsQuery = useQuery({
     queryKey: ["internal-assignments-for-me", me?.id, me?.division],
@@ -157,29 +223,38 @@ export function AssignedToMeTab({ me }: { me: Profile | null | undefined }) {
     );
   }
 
-  const isHistory = (a: InternalAssignment) => {
-    const s = submissionByAssignment.get(a.id);
-    return (
-      a?.is_cancelled === true ||
-      s?.review_status === "Selesai" ||
-      s?.review_status === "Dibatalkan_Anggota"
-    );
-  };
+  const submissionOf = (id: string) => submissionByAssignment.get(id);
 
-  const todo = (assignments ?? []).filter((a) => !isHistory(a));
-  const history = (assignments ?? []).filter(isHistory);
+  /**
+   * "Belum Dikerjakan" = belum dikumpulkan atau sudah dikirim tapi belum
+   * disetujui. "Sudah Selesai" = sudah disetujui. Yang dibatalkan dipisah.
+   */
+  const progressOf = (a: InternalAssignment) => assignmentProgress(a, submissionOf(a.id));
+
+  const pending = (assignments ?? []).filter((a) => progressOf(a) === "pending").sort(byUrgency);
+  const done = (assignments ?? [])
+    .filter((a) => progressOf(a) === "done")
+    .sort((a, b) => byLatest(a, b, submissionOf, "done"));
+  const cancelled = (assignments ?? [])
+    .filter((a) => progressOf(a) === "cancelled")
+    .sort((a, b) => byLatest(a, b, submissionOf, "cancelled"));
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <section className="space-y-3">
-        <h2 className="text-lg font-semibold">Perlu Dikerjakan ({todo.length})</h2>
-        {todo.length === 0 ? (
+        <SectionHeading
+          icon={ClipboardList}
+          title="Belum Dikerjakan"
+          count={pending.length}
+          hint="Tenggat paling dekat ditampilkan lebih dulu."
+        />
+        {pending.length === 0 ? (
           <p className="rounded-2xl border bg-card p-6 text-sm text-muted-foreground shadow-sm">
             Tidak ada tugas yang perlu dikerjakan saat ini.
           </p>
         ) : (
-          todo.map((a) => {
-            const sub = submissionByAssignment.get(a.id);
+          pending.map((a) => {
+            const sub = submissionOf(a.id);
             return (
               <ReceivedTaskCard
                 key={a.id}
@@ -202,16 +277,61 @@ export function AssignedToMeTab({ me }: { me: Profile | null | undefined }) {
         )}
       </section>
 
-      <section className="space-y-2">
-        <h2 className="text-lg font-semibold">Riwayat ({history.length})</h2>
-        {history.length === 0 ? (
-          <p className="text-sm text-muted-foreground">Belum ada riwayat.</p>
+      <section className="space-y-3">
+        <SectionHeading
+          icon={CheckCircle2}
+          title="Sudah Selesai"
+          count={done.length}
+          hint="Tugas yang kamu kumpulkan dan sudah disetujui."
+        />
+        {done.length === 0 ? (
+          <p className="rounded-2xl border bg-card p-6 text-sm text-muted-foreground shadow-sm">
+            Belum ada tugas yang selesai.
+          </p>
         ) : (
-          history.map((a) => (
-            <HistoryTaskRow key={a.id} assignment={a} submission={submissionByAssignment.get(a.id)} />
-          ))
+          <div className="space-y-2">
+            {done.map((a) => (
+              <HistoryTaskRow key={a.id} assignment={a} submission={submissionOf(a.id)} />
+            ))}
+          </div>
         )}
       </section>
+
+      {cancelled.length > 0 && (
+        <section className="space-y-2">
+          <button
+            className="flex w-full items-center justify-between gap-3 rounded-2xl border bg-card px-4 py-3 text-left shadow-sm transition-colors hover:bg-accent"
+            onClick={() => setShowCancelled((v) => !v)}
+            aria-expanded={showCancelled}
+          >
+            <span className="flex min-w-0 items-center gap-3">
+              <span className="flex size-8 shrink-0 items-center justify-center rounded-xl bg-secondary text-muted-foreground">
+                <Ban className="size-4" />
+              </span>
+              <span className="min-w-0">
+                <span className="block text-sm font-semibold tracking-tight">
+                  Dibatalkan <span className="text-muted-foreground">({cancelled.length})</span>
+                </span>
+                <span className="block text-xs text-muted-foreground">
+                  Tugas yang dibatalkan pembuat atau kamu batalkan.
+                </span>
+              </span>
+            </span>
+            {showCancelled ? (
+              <ChevronUp className="size-4 shrink-0 text-muted-foreground" />
+            ) : (
+              <ChevronDown className="size-4 shrink-0 text-muted-foreground" />
+            )}
+          </button>
+          {showCancelled && (
+            <div className="space-y-2">
+              {cancelled.map((a) => (
+                <HistoryTaskRow key={a.id} assignment={a} submission={submissionOf(a.id)} />
+              ))}
+            </div>
+          )}
+        </section>
+      )}
 
       <CancelReasonDialog
         open={!!cancelTarget}
