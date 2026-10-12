@@ -21,9 +21,14 @@ const DT = (v?: string | null) =>
   v ? format(new Date(v), "dd/MM/yyyy HH:mm", { locale: idLocale }) : "";
 const D = (v?: string | null) => (v ? format(new Date(v), "dd/MM/yyyy", { locale: idLocale }) : "");
 
-function truncate(v: string | null | undefined, max = 500) {
-  if (!v) return "";
-  return v.length > max ? `${v.slice(0, max)}…` : v;
+// Excel membatasi satu sel 32.767 karakter; teks panjang dilanjutkan ke kolom berikutnya.
+const CELL_MAX = 32000;
+function answerCells(v: string | null | undefined): Record<string, string> {
+  const text = v ?? "";
+  const out: Record<string, string> = { "Isi Jawaban": text.slice(0, CELL_MAX) };
+  for (let i = 1; i * CELL_MAX < text.length; i++)
+    out[`Isi Jawaban (lanjutan ${i})`] = text.slice(i * CELL_MAX, (i + 1) * CELL_MAX);
+  return out;
 }
 
 function slug(v: string) {
@@ -86,7 +91,7 @@ function detailRows(
       Divisi: divisions.find((d) => d.code === p.division)?.name ?? p.division ?? "",
       "Status Kumpul": s ? "Sudah" : "Belum",
       "Waktu Kumpul": s ? DT(s.submitted_at) : "",
-      "Isi Jawaban": s ? truncate(s.content) : "",
+      ...(s ? answerCells(s.content) : { "Isi Jawaban": "" }),
       "Ada Lampiran": s ? (s.file_url ? "Ya" : "Tidak") : "",
       "Komentar Pembina": s?.supervisor_comment ?? "",
       "Waktu Dikomentari": s ? DT(s.commented_at) : "",
