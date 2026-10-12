@@ -63,7 +63,7 @@ const timeOf = (value?: string | null) => {
   return Number.isNaN(t) ? null : t;
 };
 
-/** Due date paling cepat dulu; tanpa tenggat paling akhir. */
+/** Tenggat paling cepat dulu; tugas tanpa tenggat paling akhir. */
 function byUrgency(a: InternalAssignment, b: InternalAssignment) {
   const da = timeOf(a?.due_date) ?? Number.POSITIVE_INFINITY;
   const db = timeOf(b?.due_date) ?? Number.POSITIVE_INFINITY;
@@ -71,12 +71,27 @@ function byUrgency(a: InternalAssignment, b: InternalAssignment) {
   return (timeOf(b?.created_at) ?? 0) - (timeOf(a?.created_at) ?? 0);
 }
 
-/** Yang paling baru selesai paling atas. */
-function byLatest(a: InternalAssignment, b: InternalAssignment) {
-  const da = timeOf(a?.cancelled_at) ?? Number.NEGATIVE_INFINITY;
-  const db = timeOf(b?.cancelled_at) ?? Number.NEGATIVE_INFINITY;
-  if (da !== db) return db - da;
-  return (timeOf(b?.created_at) ?? 0) - (timeOf(a?.created_at) ?? 0);
+/** Yang paling baru selesai/dibatalkan paling atas. */
+function byLatest(
+  a: InternalAssignment,
+  b: InternalAssignment,
+  submissionOf: (id: string) => InternalSubmission | undefined,
+  mode: "done" | "cancelled",
+) {
+  const stampOf = (a: InternalAssignment) => {
+    const s = submissionOf(a.id);
+    if (mode === "done") {
+      return timeOf(s?.finalized_at) ?? timeOf(s?.submitted_at) ?? timeOf(a?.due_date) ?? 0;
+    }
+    return (
+      timeOf(a?.cancelled_at) ??
+      timeOf(s?.member_cancelled_at) ??
+      timeOf(s?.submitted_at) ??
+      timeOf(a?.created_at) ??
+      0
+    );
+  };
+  return stampOf(b) - stampOf(a);
 }
 
 export function AssignedToMeTab({ me }: { me: Profile | null | undefined }) {
@@ -207,15 +222,17 @@ export function AssignedToMeTab({ me }: { me: Profile | null | undefined }) {
     );
   }
 
+  const submissionOf = (id: string) => submissionByAssignment.get(id);
+
   /** Dibatalkan pembuat atau dibatalkan anggota: bukan selesai, bukan pula PR. */
   const isCancelled = (a: InternalAssignment) => {
-    const s = submissionByAssignment.get(a.id);
+    const s = submissionOf(a.id);
     return a?.is_cancelled === true || s?.review_status === "Dibatalkan_Anggota";
   };
 
   /** Disetujui/di-finalisasi: dianggap sudah selesai. */
   const isDone = (a: InternalAssignment) => {
-    const s = submissionByAssignment.get(a.id);
+    const s = submissionOf(a.id);
     return !isCancelled(a) && s?.review_status === "Selesai";
   };
 
@@ -223,33 +240,10 @@ export function AssignedToMeTab({ me }: { me: Profile | null | undefined }) {
   const isPending = (a: InternalAssignment) => !isCancelled(a) && !isDone(a);
 
   const pending = (assignments ?? []).filter(isPending).sort(byUrgency);
-  const done = (assignments ?? []).filter(isDone).sort(byLatest);
-  const cancelled = (assignments ?? []).filter(isCancelled).sort(byLatest);
-
-  const doneSorted = done
-    .map((a) => {
-      const s = submissionByAssignment.get(a.id);
-      const t = timeOf(s?.finalized_at) ?? timeOf(s?.submitted_at) ?? timeOf(a?.due_date) ?? 0;
-      return { a, t };
-    })
-    .sort((x, y) => y.t - x.t)
-    .map((x) => x.a);
-
-  const cancelledSorted = cancelled
-    .map((a) => {
-      const s = submissionByAssignment.get(a.id);
-      const t =
-        timeOf(a?.cancelled_at) ??
-        timeOf(s?.member_cancelled_at) ??
-        timeOf(s?.submitted_at) ??
-        timeOf(a?.created_at) ??
-        0;
-      return { a, t };
-    })
-    .sort((x, y) => y.t - x.t)
-    .map((x) => x.a);
-
-  void latestDoneTime;
+  const done = (assignments ?? []).filter(isDone).sort((a, b) => byLatest(a, b, submissionOf, "done"));
+  const cancelled = (assignments ?? [])
+    .filter(isCancelled)
+    .sort((a, b) => byLatest(a, b, submissionOf, "cancelled"));
 
   return (
     <div className="space-y-8">
@@ -266,7 +260,7 @@ export function AssignedToMeTab({ me }: { me: Profile | null | undefined }) {
           </p>
         ) : (
           pending.map((a) => {
-            const sub = submissionByAssignment.get(a.id);
+            const sub = submissionOf(a.id);
             return (
               <ReceivedTaskCard
                 key={a.id}
@@ -293,40 +287,37 @@ export function AssignedToMeTab({ me }: { me: Profile | null | undefined }) {
         <SectionHeading
           icon={CheckCircle2}
           title="Sudah Selesai"
-          count={doneSorted.length}
-          hint="Tugas yang sudah kamu kumpulkan dan disetujui."
+          count={done.length}
+          hint="Tugas yang kamu kumpulkan dan sudah disetujui."
         />
-        {doneSorted.length === 0 ? (
+        {done.length === 0 ? (
           <p className="rounded-2xl border bg-card p-6 text-sm text-muted-foreground shadow-sm">
             Belum ada tugas yang selesai.
           </p>
         ) : (
           <div className="space-y-2">
-            {doneSorted.map((a) => (
-              <HistoryTaskRow
-                key={a.id}
-                assignment={a}
-                submission={submissionByAssignment.get(a.id)}
-              />
+            {done.map((a) => (
+              <HistoryTaskRow key={a.id} assignment={a} submission={submissionOf(a.id)} />
             ))}
           </div>
         )}
       </section>
 
-      {cancelledSorted.length > 0 && (
+      {cancelled.length > 0 && (
         <section className="space-y-2">
           <button
             className="flex w-full items-center justify-between gap-3 rounded-2xl border bg-card px-4 py-3 text-left shadow-sm transition-colors hover:bg-accent"
             onClick={() => setShowCancelled((v) => !v)}
             aria-expanded={showCancelled}
           >
-            <span className="flex items-center gap-3">
+            <span className="flex min-w-0 items-center gap-3">
               <span className="flex size-8 shrink-0 items-center justify-center rounded-xl bg-secondary text-muted-foreground">
                 <Ban className="size-4" />
               </span>
               <span className="min-w-0">
                 <span className="block text-sm font-semibold tracking-tight">
-                  Dibatalkan <span className="text-muted-foreground">({cancelledSorted.length})</span>
+                  Dibatalkan{" "}
+                  <span className="text-muted-foreground">({cancelled.length})</span>
                 </span>
                 <span className="block text-xs text-muted-foreground">
                   Tugas yang dibatalkan pembuat atau kamu batalkan.
@@ -341,12 +332,8 @@ export function AssignedToMeTab({ me }: { me: Profile | null | undefined }) {
           </button>
           {showCancelled && (
             <div className="space-y-2">
-              {cancelledSorted.map((a) => (
-                <HistoryTaskRow
-                  key={a.id}
-                  assignment={a}
-                  submission={submissionByAssignment.get(a.id)}
-                />
+              {cancelled.map((a) => (
+                <HistoryTaskRow key={a.id} assignment={a} submission={submissionOf(a.id)} />
               ))}
             </div>
           )}
