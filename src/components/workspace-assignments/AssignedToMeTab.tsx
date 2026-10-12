@@ -7,6 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useDivisions, useProfiles, type Profile } from "@/hooks/useProfile";
 import { uploadSubmissionFile } from "@/lib/assignments";
 import {
+  assignmentProgress,
   cancelByMember,
   cancelByMemberWithoutSubmission,
   fetchEscalationsFor,
@@ -224,25 +225,20 @@ export function AssignedToMeTab({ me }: { me: Profile | null | undefined }) {
 
   const submissionOf = (id: string) => submissionByAssignment.get(id);
 
-  /** Dibatalkan pembuat atau dibatalkan anggota: bukan selesai, bukan pula PR. */
-  const isCancelled = (a: InternalAssignment) => {
-    const s = submissionOf(a.id);
-    return a?.is_cancelled === true || s?.review_status === "Dibatalkan_Anggota";
-  };
+  /**
+   * "Belum Dikerjakan" = belum dikumpulkan atau sudah dikirim tapi belum
+   * disetujui. "Sudah Selesai" = sudah disetujui. Yang dibatalkan dipisah.
+   */
+  const progressOf = (a: InternalAssignment) => assignmentProgress(a, submissionOf(a.id));
 
-  /** Disetujui/di-finalisasi: dianggap sudah selesai. */
-  const isDone = (a: InternalAssignment) => {
-    const s = submissionOf(a.id);
-    return !isCancelled(a) && s?.review_status === "Selesai";
-  };
-
-  /** Belum dikumpulkan, atau sudah dikumpulkan tapi belum disetujui. */
-  const isPending = (a: InternalAssignment) => !isCancelled(a) && !isDone(a);
-
-  const pending = (assignments ?? []).filter(isPending).sort(byUrgency);
-  const done = (assignments ?? []).filter(isDone).sort((a, b) => byLatest(a, b, submissionOf, "done"));
+  const pending = (assignments ?? [])
+    .filter((a) => progressOf(a) === "pending")
+    .sort(byUrgency);
+  const done = (assignments ?? [])
+    .filter((a) => progressOf(a) === "done")
+    .sort((a, b) => byLatest(a, b, submissionOf, "done"));
   const cancelled = (assignments ?? [])
-    .filter(isCancelled)
+    .filter((a) => progressOf(a) === "cancelled")
     .sort((a, b) => byLatest(a, b, submissionOf, "cancelled"));
 
   return (

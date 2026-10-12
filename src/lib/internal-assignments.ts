@@ -138,6 +138,27 @@ export function reviewStatusClass(status?: ReviewStatus | string | null): string
   }
 }
 
+export type AssignmentProgress = "pending" | "done" | "cancelled";
+
+/**
+ * Pengelompokan tugas untuk penerimanya: "pending" masih jadi PR (belum
+ * dikumpulkan atau sudah dikumpulkan tapi belum disetujui), "done" sudah
+ * disetujui, "cancelled" dibatalkan pembuat maupun anggota.
+ */
+export function assignmentProgress(
+  assignment: { is_cancelled?: boolean | null } | null | undefined,
+  submission: { review_status?: ReviewStatus | string | null } | null | undefined,
+): AssignmentProgress {
+  if (
+    assignment?.is_cancelled === true ||
+    submission?.review_status === "Dibatalkan_Anggota"
+  ) {
+    return "cancelled";
+  }
+  if (submission?.review_status === "Selesai") return "done";
+  return "pending";
+}
+
 export function visibilityList(
   flags: VisibilityFlags | null | undefined,
   opts: { assignerName?: string | null; assignerDivision?: string | null },
