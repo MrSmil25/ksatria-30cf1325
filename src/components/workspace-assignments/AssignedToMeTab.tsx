@@ -226,14 +226,6 @@ export function AssignedToMeTab({ me }: { me: Profile | null | undefined }) {
   const done = (assignments ?? []).filter(isDone).sort(byLatest);
   const cancelled = (assignments ?? []).filter(isCancelled).sort(byLatest);
 
-  const latestDoneTime = done
-    .map((a) => {
-      const s = submissionByAssignment.get(a.id);
-      return timeOf(s?.finalized_at) ?? timeOf(s?.submitted_at);
-    })
-    .filter((v): v is number => v !== null)
-    .sort((a, b) => b - a);
-
   const doneSorted = done
     .map((a) => {
       const s = submissionByAssignment.get(a.id);
