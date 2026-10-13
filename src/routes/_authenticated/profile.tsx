@@ -35,6 +35,10 @@ function ProfilePage() {
   const [phone, setPhone] = useState("");
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [changingPassword, setChangingPassword] = useState(false);
 
   useEffect(() => {
     if (profile) {
@@ -98,6 +102,36 @@ function ProfilePage() {
     }
     await queryClient.invalidateQueries();
     toast.success("Perubahan disimpan");
+  }
+
+  async function handleChangePassword(e: React.FormEvent) {
+    e.preventDefault();
+    if (newPassword.length < 6) {
+      toast.error("Password baru minimal 6 karakter");
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      toast.error("Konfirmasi password baru tidak cocok");
+      return;
+    }
+    setChangingPassword(true);
+    const { error } = await supabase.auth.updateUser({
+      password: newPassword,
+      current_password: currentPassword,
+    });
+    setChangingPassword(false);
+    if (error) {
+      toast.error(
+        error.message.includes("Current password")
+          ? "Password saat ini salah."
+          : "Gagal mengganti password: " + error.message,
+      );
+      return;
+    }
+    setCurrentPassword("");
+    setNewPassword("");
+    setConfirmPassword("");
+    toast.success("Password berhasil diganti");
   }
 
   if (isLoading) {
